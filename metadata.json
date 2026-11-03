@@ -2,5 +2,7 @@
   "name": "AXXESOS - Automatización de Portones y Seguridad Electrónica",
   "description": "Sitio web oficial y tienda de AXXESOS en San Juan, Argentina. Especialistas en automatización de portones corredizos, levadizos, alarmas y CCTV.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
