@@ -1,6 +1,7 @@
 import React from 'react';
 import { CompanyConfig } from '../config/company';
 import { ShieldCheck, MapPin, Award, Clock, Star, Edit3, ArrowRight } from 'lucide-react';
+import { Logo } from './Logo';
 
 interface AboutSectionProps {
   config: CompanyConfig;
@@ -36,6 +37,9 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
 
                 {/* 25 Años Emblem from user logo */}
                 <div className="bg-zinc-900/90 rounded-xl p-5 border border-zinc-800 text-center space-y-2">
+                  <div className="flex justify-center mb-1">
+                    <Logo variant="icon" size="md" />
+                  </div>
                   <span className="inline-block px-2.5 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-red-950 text-red-400 border border-red-800/60">
                     Distintivo Institucional
                   </span>
