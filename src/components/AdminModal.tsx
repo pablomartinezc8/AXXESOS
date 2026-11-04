@@ -207,18 +207,24 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       return;
     }
     const catMap: Record<string, string> = {
+      'automatizadores': 'Automatizadores',
+      'seguridad': 'Seguridad y CCTV',
+      'ruedas': 'Ruedas y Herrajes',
+      'electrocerraduras': 'Electrocerraduras y Cierrapuertas',
+      'estabilizadores': 'Estabilizadores',
       'corredizos': 'Motores Corredizos',
       'levadizos': 'Motores Levadizos',
       'batientes': 'Motores Batientes',
       'controles': 'Controles y Placas',
-      'seguridad': 'CCTV y Alarmas',
       'repuestos': 'Accesorios y Cremalleras'
     };
     const created: ProductItem = {
       id: `prod-${Date.now()}`,
       name: newProduct.name,
-      category: newProduct.category || 'corredizos',
-      categoryLabel: catMap[newProduct.category || 'corredizos'] || 'Portones',
+      category: newProduct.category || 'automatizadores',
+      subcategory: newProduct.subcategory || 'corredizos',
+      categoryLabel: catMap[newProduct.category || 'automatizadores'] || 'Automatizadores',
+      subcategoryLabel: catMap[newProduct.subcategory || 'corredizos'] || 'Corredizos',
       price: Number(newProduct.price),
       inStock: newProduct.inStock ?? true,
       stockCountText: newProduct.stockCountText || 'En stock',
@@ -227,7 +233,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       shortDescription: newProduct.shortDescription || 'Equipo para automatización o seguridad.',
       fullDescription: newProduct.fullDescription || newProduct.shortDescription || '',
       specs: newProduct.specs || {},
-      imageUrl: newProduct.imageUrl || '/assets/aistudio/dd7b3dbf-077d-4688-8f70-81155689c7c2_777b42ff.jpg'
+      imageUrl: newProduct.imageUrl || '/products/axxesos_sliding_motor.jpg'
     };
     const updated = [created, ...products];
     onSaveProducts(updated);

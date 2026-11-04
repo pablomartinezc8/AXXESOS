@@ -6,11 +6,20 @@ import { MapPin, Phone, Clock, Instagram, ShieldCheck, ArrowUp, MessageCircle } 
 interface FooterProps {
   config: CompanyConfig;
   onOpenAdmin: () => void;
+  onSelectModule?: (moduleId: string) => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ config, onOpenAdmin }) => {
+export const Footer: React.FC<FooterProps> = ({ config, onOpenAdmin, onSelectModule }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleLink = (e: React.MouseEvent, modId: string) => {
+    e.preventDefault();
+    if (onSelectModule) {
+      onSelectModule(modId);
+      scrollToTop();
+    }
   };
 
   return (
@@ -46,22 +55,25 @@ export const Footer: React.FC<FooterProps> = ({ config, onOpenAdmin }) => {
             </h4>
             <ul className="space-y-2 text-xs text-zinc-400">
               <li>
-                <a href="#inicio" className="hover:text-red-400 transition-colors">Inicio</a>
+                <a href="#inicio" onClick={(e) => handleLink(e, 'inicio')} className="hover:text-red-400 transition-colors">Inicio</a>
               </li>
               <li>
-                <a href="#nosotros" className="hover:text-red-400 transition-colors">Quiénes somos</a>
+                <a href="#productos" onClick={(e) => handleLink(e, 'productos')} className="hover:text-red-400 transition-colors">Catálogo de Productos</a>
               </li>
               <li>
-                <a href="#servicios" className="hover:text-red-400 transition-colors">Servicios</a>
+                <a href="#wifi" onClick={(e) => handleLink(e, 'wifi')} className="hover:text-red-400 transition-colors">Portones con WiFi</a>
               </li>
               <li>
-                <a href="#trabajos" className="hover:text-red-400 transition-colors">Trabajos realizados</a>
+                <a href="#servicios" onClick={(e) => handleLink(e, 'servicios')} className="hover:text-red-400 transition-colors">Servicios Técnicos</a>
               </li>
               <li>
-                <a href="#tienda" className="hover:text-red-400 transition-colors">Tienda online</a>
+                <a href="#trabajos" onClick={(e) => handleLink(e, 'trabajos')} className="hover:text-red-400 transition-colors">Trabajos Realizados</a>
               </li>
               <li>
-                <a href="#contacto" className="hover:text-red-400 transition-colors">Contacto</a>
+                <a href="#nosotros" onClick={(e) => handleLink(e, 'nosotros')} className="hover:text-red-400 transition-colors">Quiénes Somos (28 Años)</a>
+              </li>
+              <li>
+                <a href="#contacto" onClick={(e) => handleLink(e, 'contacto')} className="hover:text-red-400 transition-colors">Contacto y Ubicación</a>
               </li>
             </ul>
           </div>

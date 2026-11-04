@@ -57,7 +57,7 @@ export interface ContactInquiry {
 const STORAGE_KEYS = {
   CONFIG: 'axxesos_company_config_v1',
   PROJECTS: 'axxesos_projects_v2',
-  PRODUCTS: 'axxesos_products_v1',
+  PRODUCTS: 'axxesos_products_v3',
   CAROUSEL: 'axxesos_carousel_v1',
   ORDERS: 'axxesos_orders_v1',
   INQUIRIES: 'axxesos_inquiries_v1',

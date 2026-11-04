@@ -69,11 +69,21 @@ export interface ProjectItem {
   dateAdded?: string;
 }
 
+export interface ProductPerformance {
+  openingTime?: string;
+  maxWeight?: string;
+  power?: string;
+  cyclesPerHour?: string;
+  voltage?: string;
+}
+
 export interface ProductItem {
   id: string;
   name: string;
-  category: 'corredizos' | 'levadizos' | 'batientes' | 'controles' | 'seguridad' | 'repuestos';
+  category: string; // 'automatizadores' | 'seguridad' | 'ruedas' | 'electrocerraduras' | 'estabilizadores' | 'controles'
+  subcategory: string; // 'corredizos' | 'levadizos' | 'batientes' | 'motores_wifi' | 'cortinas' | 'centrales' | 'controles' | 'camaras' | 'cercos' | 'alarmas' | 'ruedas_v' | 'ruedas_v_soporte' | 'ruedas_redondo' | 'ruedas_doble_ruleman' | 'rieles_cremalleras' | 'electrocerradura_perno' | 'cerradura_digital' | 'cierrapuertas' | 'rodillos' | 'estabilizadores_l' | 'estabilizadores_u'
   categoryLabel: string;
+  subcategoryLabel: string;
   price: number;
   inStock: boolean;
   stockCountText: string;
@@ -82,6 +92,7 @@ export interface ProductItem {
   shortDescription: string;
   fullDescription: string;
   specs: { [key: string]: string };
+  performance?: ProductPerformance;
   imageUrl: string;
   featured?: boolean;
 }
@@ -313,176 +324,578 @@ export const INITIAL_REAL_PROJECTS: ProjectItem[] = [
   }
 ];
 
+export interface CatalogSubcategory {
+  id: string;
+  label: string;
+  parentCategoryId: string;
+}
+
+export interface CatalogCategory {
+  id: string;
+  label: string;
+  shortDesc: string;
+  iconName: string;
+  subcategories: CatalogSubcategory[];
+}
+
+export const CATALOG_CATEGORIES: CatalogCategory[] = [
+  {
+    id: 'automatizadores',
+    label: 'Automatizadores',
+    shortDesc: 'Motores para portones corredizos, levadizos, batientes y cortinas',
+    iconName: 'Maximize2',
+    subcategories: [
+      { id: 'corredizos', label: 'Corredizos', parentCategoryId: 'automatizadores' },
+      { id: 'levadizos', label: 'Levadizos', parentCategoryId: 'automatizadores' },
+      { id: 'batientes', label: 'Pivotantes / Batientes', parentCategoryId: 'automatizadores' },
+      { id: 'motores_wifi', label: 'Motores y Módulos WiFi', parentCategoryId: 'automatizadores' },
+      { id: 'centrales', label: 'Centrales Electrónicas', parentCategoryId: 'automatizadores' },
+      { id: 'controles', label: 'Controles Remotos', parentCategoryId: 'automatizadores' },
+      { id: 'accesorios', label: 'Accesorios y Fotocélulas', parentCategoryId: 'automatizadores' }
+    ]
+  },
+  {
+    id: 'seguridad',
+    label: 'Seguridad y CCTV',
+    shortDesc: 'Cámaras de vigilancia, alarmas y cercos eléctricos perimetrales',
+    iconName: 'ShieldAlert',
+    subcategories: [
+      { id: 'camaras', label: 'Cámaras de Seguridad (CCTV)', parentCategoryId: 'seguridad' },
+      { id: 'cercos', label: 'Cercos Eléctricos y Concertinas', parentCategoryId: 'seguridad' },
+      { id: 'alarmas', label: 'Alarmas Domiciliarias e Industriales', parentCategoryId: 'seguridad' }
+    ]
+  },
+  {
+    id: 'ruedas',
+    label: 'Ruedas y Herrajes',
+    shortDesc: 'Ruedas de acero, perfiles guía, cremalleras y rodamientos reforzados',
+    iconName: 'Disc',
+    subcategories: [
+      { id: 'ruedas_v', label: 'Canal en V', parentCategoryId: 'ruedas' },
+      { id: 'ruedas_v_soporte', label: 'Con Soporte Canal en V', parentCategoryId: 'ruedas' },
+      { id: 'ruedas_redondo', label: 'Canal Redondo', parentCategoryId: 'ruedas' },
+      { id: 'ruedas_doble_ruleman', label: 'Doble Rulemán', parentCategoryId: 'ruedas' },
+      { id: 'rieles_cremalleras', label: 'Cremalleras y Perfiles Riel', parentCategoryId: 'ruedas' }
+    ]
+  },
+  {
+    id: 'electrocerraduras',
+    label: 'Electrocerraduras y Cierrapuertas',
+    shortDesc: 'Cerraduras electromecánicas, inteligentes y cierrapuertas hidráulicos',
+    iconName: 'Lock',
+    subcategories: [
+      { id: 'electrocerradura_perno', label: 'Electrocerradura de Perno', parentCategoryId: 'electrocerraduras' },
+      { id: 'cerradura_digital', label: 'Cerradura Digital Inteligente', parentCategoryId: 'electrocerraduras' },
+      { id: 'cierrapuertas', label: 'Cierrapuertas Hidráulicos', parentCategoryId: 'electrocerraduras' }
+    ]
+  },
+  {
+    id: 'estabilizadores',
+    label: 'Estabilizadores',
+    shortDesc: 'Rodillos de nylon y guías antivibración en L y U para portones',
+    iconName: 'Sliders',
+    subcategories: [
+      { id: 'rodillos', label: 'Rodillos de Guía', parentCategoryId: 'estabilizadores' },
+      { id: 'estabilizadores_l', label: 'Estabilizadores en L', parentCategoryId: 'estabilizadores' },
+      { id: 'estabilizadores_u', label: 'Estabilizadores en U', parentCategoryId: 'estabilizadores' }
+    ]
+  }
+];
+
 export const INITIAL_PRODUCTS: ProductItem[] = [
   {
     id: "prod-1-kit-corredizo-std",
-    name: "Kit Motor Portón Corredizo Residencial",
-    category: "corredizos",
-    categoryLabel: "Motores Corredizos",
+    name: "Kit Motor Portón Corredizo Residencial AXXESOS 400",
+    category: "automatizadores",
+    subcategory: "corredizos",
+    categoryLabel: "Automatizadores",
+    subcategoryLabel: "Corredizos",
     price: 185000,
     inStock: true,
-    stockCountText: "Consultar disponibilidad en local",
+    stockCountText: "En stock para entrega o colocación",
     isExample: true,
-    badge: "Ejemplo - A CONFIRMAR",
-    shortDescription: "Kit base para portón corredizo de hasta 400 kg. Incluye central electrónica, 3 metros de cremallera y 2 controles.",
-    fullDescription: "Solución completa y confiable para residencias. Cuenta con desacople manual por corte de energía mediante llave, desaceleración programable en los extremos del recorrido y entradas para fotocélula de seguridad.",
-    specs: {
-      "Capacidad máxima": "Hasta 400 kg (A CONFIRMAR)",
-      "Velocidad aprox.": "12 a 15 seg por tramo de 3m (A CONFIRMAR)",
-      "Alimentación": "220V AC",
-      "Incluye": "2 Controles remotos + 3m cremallera + Placa de comando",
-      "Garantía": "12 meses de garantía oficial (A CONFIRMAR)"
+    badge: "Más Vendido",
+    shortDescription: "Kit completo para portones corredizos de hasta 400 kg. Marcha suave, embrague electrónico y desacople manual por corte de luz.",
+    fullDescription: "Solución completa y confiable para residencias en San Juan. Motorreductor lubricado de alta durabilidad, desacople manual mediante llave codificada, final de carrera magnético y parada suave programable.",
+    performance: {
+      voltage: "220V AC (50Hz)",
+      power: "1/4 HP (180W)",
+      maxWeight: "Hasta 400 kg",
+      openingTime: "12 segundos (tramo de 3m)",
+      cyclesPerHour: "25 ciclos / hora (Residencial)"
     },
-    imageUrl: "/assets/aistudio/dd7b3dbf-077d-4688-8f70-81155689c7c2_777b42ff.jpg",
+    specs: {
+      "Tensión nominal": "220V AC - 50 Hz",
+      "Potencia nominal": "180 W (1/4 HP)",
+      "Peso máx. portón": "400 kg",
+      "Tiempo de apertura (3m)": "12 segundos",
+      "Ciclos por hora": "25 ciclos/h (Uso residencial)",
+      "Incluye en kit": "2 Controles remotos + 3m de cremallera de acero + Placa de comando",
+      "Desacople de emergencia": "Llave metálica personalizada",
+      "Garantía": "12 meses con respaldo técnico en San Juan"
+    },
+    imageUrl: "/products/axxesos_sliding_motor.jpg",
+    featured: true
+  },
+  {
+    id: "prod-corredizo-fast-turbo",
+    name: "Kit Motor Corredizo Rápido Turbo Fast 800 kg (Apertura 7 Seg)",
+    category: "automatizadores",
+    subcategory: "corredizos",
+    categoryLabel: "Automatizadores",
+    subcategoryLabel: "Corredizos",
+    price: 245000,
+    inStock: true,
+    stockCountText: "En stock permanente",
+    isExample: true,
+    badge: "Apertura Rápida 7s",
+    shortDescription: "Motor de alta velocidad que abre 3 metros en tan solo 7 segundos. Máxima seguridad al ingresar al hogar.",
+    fullDescription: "Ideal para cocheras sobre calles transitadas de San Juan donde se requiere ingresar en tiempo récord para prevenir entraderas. Motorreductor con engranaje de acero y rampa de desaceleración electrónica.",
+    performance: {
+      voltage: "220V AC (50Hz)",
+      power: "1/3 HP (280W)",
+      maxWeight: "Hasta 800 kg",
+      openingTime: "7 segundos (tramo de 3m)",
+      cyclesPerHour: "40 ciclos / hora (Semi-intensivo)"
+    },
+    specs: {
+      "Tensión nominal": "220V AC - 50 Hz",
+      "Potencia nominal": "280 W (1/3 HP)",
+      "Peso máx. portón": "800 kg",
+      "Tiempo de apertura (3m)": "7 segundos (Tecnología Fast)",
+      "Ciclos por hora": "40 ciclos/h",
+      "Engranaje de arrastre": "Acero maquinado endurecido",
+      "Incluye": "Central con freno electrónico + 2 controles rolling code + 3m cremallera",
+      "Garantía": "12 meses oficial AXXESOS"
+    },
+    imageUrl: "/products/axxesos_sliding_motor.jpg",
+    featured: true
+  },
+  {
+    id: "prod-wifi-smart-gate",
+    name: "Módulo WiFi AXXESOS Smart (Control por Celular)",
+    category: "automatizadores",
+    subcategory: "motores_wifi",
+    categoryLabel: "Automatizadores",
+    subcategoryLabel: "Motores y Módulos WiFi",
+    price: 38500,
+    inStock: true,
+    stockCountText: "En stock en Mariano Moreno 297",
+    isExample: true,
+    badge: "Tecnología WiFi",
+    shortDescription: "Abrí y cerrá tu portón desde cualquier parte del mundo con tu smartphone (Android / iOS). Estado en tiempo real y notificaciones.",
+    fullDescription: "Convertí tu portón actual en inteligente sin importar la marca de tu motor. Recibí alertas en el teléfono si el portón queda abierto, creá llaves virtuales para visitas y compartí el acceso con toda tu familia.",
+    performance: {
+      voltage: "12V - 24V AC/DC o 220V",
+      power: "Consumo mínimo < 1W en reposo",
+      maxWeight: "Compatible con todo portón automático",
+      openingTime: "Instantáneo vía Internet / WiFi 2.4 GHz",
+      cyclesPerHour: "Ilimitado"
+    },
+    specs: {
+      "Conectividad": "WiFi 2.4 GHz b/g/n",
+      "Compatibilidad": "Motores corredizos, levadizos y batientes de cualquier marca",
+      "Aplicación móvil": "Tuya Smart / Smart Life (Gratis para Android y iPhone)",
+      "Sensores de estado": "Sensor magnético de apertura incluido para saber si está abierto o cerrado",
+      "Usuarios": "Hasta 20 usuarios autorizados simultáneos",
+      "Notificaciones": "Avisos inmediatos de apertura, cierre y advertencia de portón abierto"
+    },
+    imageUrl: "/products/axxesos_wifi_module.jpg",
     featured: true
   },
   {
     id: "prod-2-kit-levadizo-sinfin",
-    name: "Kit Motor Portón Levadizo Sinfín",
-    category: "levadizos",
-    categoryLabel: "Motores Levadizos",
+    name: "Kit Motor Portón Levadizo a Sinfín Residencial",
+    category: "automatizadores",
+    subcategory: "levadizos",
+    categoryLabel: "Automatizadores",
+    subcategoryLabel: "Levadizos",
     price: 215000,
     inStock: true,
     stockCountText: "En stock para instalación",
     isExample: true,
-    badge: "Ejemplo - A CONFIRMAR",
-    shortDescription: "Sistema de elevación lateral para portones levadizos contrapesados. Marcha suave y silenciosa.",
-    fullDescription: "Ideal para portones contrapesados de chapa, madera o hierro. Su motorreductor con tracción a sinfín asegura un empuje constante, con palanca de destrabe rápido accesible desde el interior.",
+    badge: "Silencioso",
+    shortDescription: "Sistema electromecánico de elevación lateral para portones levadizos contrapesados. Marcha ultrasuave y sin vibraciones.",
+    fullDescription: "Diseñado para portones contrapesados de chapa, madera o hierro en viviendas de San Juan. Tracción a sinfín que asegura traba mecánica natural en posición de cierre y destrabe de emergencia interior.",
+    performance: {
+      voltage: "220V AC (50Hz)",
+      power: "1/3 HP (250W)",
+      maxWeight: "Hasta 400 kg equilibrados",
+      openingTime: "14 segundos",
+      cyclesPerHour: "25 ciclos / hora"
+    },
     specs: {
-      "Tipo de portón": "Levadizo contrapesado residencial (A CONFIRMAR)",
-      "Recorrido del vástago": "1,50 m (según altura de hoja)",
-      "Accesorios incluidos": "Brazo telescópico, vaina, 2 controles remotos",
-      "Alimentación": "220V",
-      "Seguridad": "Parada suave electrónica"
+      "Tipo de portón": "Levadizo contrapesado",
+      "Tensión nominal": "220V AC",
+      "Potencia": "1/3 HP",
+      "Recorrido del vástago": "1,50 m con buje de bronce",
+      "Accesorios incluidos": "Brazo telescópico, vaina, 2 controles remotos y herrajes",
+      "Seguridad": "Parada suave electrónica para preservar cables y poleas"
     },
     imageUrl: "/assets/aistudio/68aceb0f-088b-43c9-97c9-604bbbcc318c_f55cddb1.jpg",
     featured: true
   },
   {
     id: "prod-3-kit-batiente-doble",
-    name: "Kit Motor Portones Batientes (Doble Hoja)",
-    category: "batientes",
-    categoryLabel: "Motores Batientes",
+    name: "Kit Automatizador Batiente Doble Hoja (Pistones Lineales)",
+    category: "automatizadores",
+    subcategory: "batientes",
+    categoryLabel: "Automatizadores",
+    subcategoryLabel: "Pivotantes / Batientes",
     price: 295000,
     inStock: true,
-    stockCountText: "A pedido / Entrega coordinada",
+    stockCountText: "Disponible con colocación",
     isExample: true,
-    badge: "Ejemplo - A CONFIRMAR",
-    shortDescription: "Par de pistones electromecánicos para portones batientes de dos hojas de hasta 2 metros por hoja.",
-    fullDescription: "Automatismo diseñado para portones de abrir hacia el interior o exterior. Su central electrónica gestiona el retardo inteligente entre hojas para un cierre perfecto sin colisiones.",
+    badge: "2 Hojas",
+    shortDescription: "Par de pistones electromecánicos para portones batientes de dos hojas (hasta 2,5 metros por hoja).",
+    fullDescription: "Automatismo de diseño estilizado para rejas coloniales o portones ciegos de dos hojas. Central electrónica inteligente que coordina el retardo entre hojas para un traslape perfecto.",
+    performance: {
+      voltage: "220V AC",
+      power: "1/4 HP por motor",
+      maxWeight: "Hasta 250 kg por hoja",
+      openingTime: "12 a 16 segundos a 90°",
+      cyclesPerHour: "25 ciclos / hora"
+    },
     specs: {
-      "Hojas": "2 Hojas de hasta 2 m cada una (A CONFIRMAR)",
-      "Tipo": "Pistón electromecánico lineal",
-      "Central de comando": "Con retardo de hoja y desaceleración",
-      "Controles": "2 mandos a distancia incluidos"
+      "Hojas admisibles": "Hasta 2,5 m por hoja (Total vano 5 m)",
+      "Mecanismo": "Pistón electromecánico lineal con vástago de acero inoxidable",
+      "Central": "Con retardo programable de hoja y desaceleración",
+      "Desacople": "Llave con cerradura en el pistón"
     },
     imageUrl: "/assets/aistudio/5ee94a8d-7f20-4aac-a73c-ea125f482811_fa473fbb.jpg",
+    featured: false
+  },
+  {
+    id: "prod-rueda-v-soporte",
+    name: "Rueda de Acero Canal en V con Soporte Soldable (80mm)",
+    category: "ruedas",
+    subcategory: "ruedas_v_soporte",
+    categoryLabel: "Ruedas y Herrajes",
+    subcategoryLabel: "Con Soporte Canal en V",
+    price: 18500,
+    inStock: true,
+    stockCountText: "Stock permanente en el local",
+    isExample: true,
+    badge: "Reforzada",
+    shortDescription: "Rueda de acero torneado con caja/soporte para soldar directo al bastidor del portón corredizo.",
+    fullDescription: "Fabricada en acero macizo con rulemán blindado de alta carga. Su caja envolvente facilita la alineación y soldadura en la base del portón, reduciendo la fricción y el esfuerzo del motor.",
+    performance: {
+      voltage: "Mecánico",
+      power: "Carga estática hasta 350 kg por rueda",
+      maxWeight: "350 kg por rueda (700 kg en par)",
+      openingTime: "Desplazamiento fluido",
+      cyclesPerHour: "Apto uso continuo"
+    },
+    specs: {
+      "Diámetro": "80 mm (Canal en V a 90°)",
+      "Material": "Acero zincado anticorrosivo",
+      "Rodamiento": "Rulemán blindado 6204-2RS",
+      "Soporte": "Chapa plegada de 3.2 mm soldable",
+      "Compatibilidad": "Ángulo o perfil de guía en V"
+    },
+    imageUrl: "/products/axxesos_gate_wheel.jpg",
     featured: true
   },
   {
+    id: "prod-rueda-doble-ruleman",
+    name: "Rueda para Portón Corredizo Doble Rulemán (100mm)",
+    category: "ruedas",
+    subcategory: "ruedas_doble_ruleman",
+    categoryLabel: "Ruedas y Herrajes",
+    subcategoryLabel: "Doble Rulemán",
+    price: 24000,
+    inStock: true,
+    stockCountText: "En stock",
+    isExample: true,
+    badge: "Pesado",
+    shortDescription: "Rueda de acero torneado con 2 rulemanes concéntricos para portones industriales o de consorcios.",
+    fullDescription: "Especial para portones de gran porte o alto tránsito de vehículos. La distribución en dos rodamientos blindados evita el juego axial y garantiza años de deslizamiento liviano.",
+    performance: {
+      voltage: "Mecánico",
+      power: "Carga hasta 600 kg por rueda",
+      maxWeight: "600 kg por unidad",
+      openingTime: "Rodado ultrasilencioso",
+      cyclesPerHour: "Industrial"
+    },
+    specs: {
+      "Diámetro de rueda": "100 mm",
+      "Tipo de canal": "Canal en V para perfil ángulo de 1 1/4\" o 1 1/2\"",
+      "Rodamiento": "2 Rulemanes blindados independientes",
+      "Eje": "Bulón de acero templado grado 8.8 con tuerca autofrenante"
+    },
+    imageUrl: "/products/axxesos_gate_wheel.jpg",
+    featured: false
+  },
+  {
+    id: "prod-electrocerradura-perno",
+    name: "Electrocerradura de Perno Reforzada 12V con Llave",
+    category: "electrocerraduras",
+    subcategory: "electrocerradura_perno",
+    categoryLabel: "Electrocerraduras y Cierrapuertas",
+    subcategoryLabel: "Electrocerradura de Perno",
+    price: 52000,
+    inStock: true,
+    stockCountText: "En stock en San Juan",
+    isExample: true,
+    badge: "Seguridad Reforzada",
+    shortDescription: "Traba electromecánica de perno macizo que bloquea el portón automáticamente al cerrar y se destraba con el control.",
+    fullDescription: "Evita que hagan palanca sobre portones levadizos, corredizos o batientes. Se conecta en paralelo a la central del motor con salida de electrocerradura o golpe de ariete. Incluye llaves de destrabe de emergencia.",
+    performance: {
+      voltage: "12V DC / AC",
+      power: "Pulso de accionamiento 1.5A",
+      maxWeight: "Resistencia al empuje > 800 kg",
+      openingTime: "Destrabe en 0.3 segundos",
+      cyclesPerHour: "Apto intemperie"
+    },
+    specs: {
+      "Alimentación": "12V AC/DC por pulso de placa",
+      "Perno": "Acero macizo de 16mm de diámetro",
+      "Carcasa": "Aluminio inyectado sellado IP65 apto lluvia y sol",
+      "Desbloqueo manual": "Cilindro con llave computada frontal",
+      "Compatibilidad": "Todo automatismo de portón con salida para cerradura"
+    },
+    imageUrl: "/products/axxesos_electrolock.jpg",
+    featured: true
+  },
+  {
+    id: "prod-cerradura-digital-biometrica",
+    name: "Cerradura Digital Inteligente Biométrica con Huella y Teclado",
+    category: "electrocerraduras",
+    subcategory: "cerradura_digital",
+    categoryLabel: "Electrocerraduras y Cierrapuertas",
+    subcategoryLabel: "Cerradura Digital Inteligente",
+    price: 95000,
+    inStock: true,
+    stockCountText: "Consultar stock",
+    isExample: true,
+    badge: "Huella y Clave",
+    shortDescription: "Apertura por huella dactilar, clave numérica, tarjeta RFID y llave mecánica para puertas peatonales.",
+    fullDescription: "Seguridad sin llaves para puertas de acceso a cocheras y entradas principales. Conectividad Bluetooth / WiFi y registro de ingresos.",
+    performance: {
+      voltage: "4 Pilas AA (duración 1 año)",
+      power: "Aviso de batería baja",
+      maxWeight: "Para puertas de madera, chapa o aluminio",
+      openingTime: "0.5 segundos de lectura biométrica",
+      cyclesPerHour: "Residencial y oficinas"
+    },
+    specs: {
+      "Métodos de acceso": "Huella dactilar, PIN numérico, Tarjeta RFID, Llave mecánica",
+      "Capacidad de huellas": "Hasta 100 huellas registradas",
+      "Alarma anti-manipulación": "Sonido disuasivo tras intentos fallidos",
+      "Puerto de emergencia": "Micro-USB para batería externa si se agotan las pilas"
+    },
+    imageUrl: "/products/axxesos_electrolock.jpg",
+    featured: false
+  },
+  {
+    id: "prod-estabilizador-u-rodillos",
+    name: "Estabilizador en U con Doble Rodillo de Nylon Antivibración",
+    category: "estabilizadores",
+    subcategory: "estabilizadores_u",
+    categoryLabel: "Estabilizadores",
+    subcategoryLabel: "Estabilizadores en U",
+    price: 16500,
+    inStock: true,
+    stockCountText: "En stock",
+    isExample: true,
+    badge: "Guía Superior",
+    shortDescription: "Puente estabilizador para fijar a la pared o pilar que mantiene recto el portón corredizo durante el recorrido.",
+    fullDescription: "Compuesto por una estructura de chapa gruesa y dos rodillos de nylon blanco de alta resistencia que abrazan el caño superior del portón, impidiendo que el viento lo golpee o lo descarrile.",
+    performance: {
+      voltage: "Mecánico",
+      power: "N/A",
+      maxWeight: "Apto portones livianos y pesados",
+      openingTime: "Rodado suave",
+      cyclesPerHour: "Uso continuo"
+    },
+    specs: {
+      "Estructura": "Chapa plegada de 4 mm con correderas de ajuste",
+      "Rodillos": "2 Rodillos de nylon técnico diámetro 40mm con eje roscado",
+      "Rango de ajuste": "Para caños de 30 mm hasta 80 mm de espesor",
+      "Fijación": "Para abulonar sobre columna de mampostería o estructura metálica"
+    },
+    imageUrl: "/assets/aistudio/dd7b3dbf-077d-4688-8f70-81155689c7c2_777b42ff.jpg",
+    featured: false
+  },
+  {
     id: "prod-4-control-remoto",
-    name: "Control Remoto Rolling Code 433 MHz",
-    category: "controles",
-    categoryLabel: "Controles y Placas",
+    name: "Control Remoto Rolling Code 433 MHz (4 Canales)",
+    category: "automatizadores",
+    subcategory: "controles",
+    categoryLabel: "Automatizadores",
+    subcategoryLabel: "Controles Remotos",
     price: 14500,
     inStock: true,
     stockCountText: "Disponible en el local",
     isExample: true,
-    badge: "Ejemplo - A CONFIRMAR",
-    shortDescription: "Transmisor de mano de 2 o 4 canales con código rotativo de alta seguridad anticopia.",
-    fullDescription: "Control ergonómico resistente a caídas con clip de visera o llavero. Programación rápida en el local o en su domicilio sobre la receptora.",
+    badge: "Anticopia",
+    shortDescription: "Transmisor ergonómico de 4 canales con código rotativo de alta seguridad para comandar hasta 4 portones distintos.",
+    fullDescription: "Gabinete engomado con clip para parasol del auto o llavero. Programación rápida en el local en Mariano Moreno Este 297 o en su domicilio sobre la receptora.",
+    performance: {
+      voltage: "Pila 12V 27A (incluida)",
+      power: "Frecuencia 433.92 MHz",
+      maxWeight: "Alcance 40 metros",
+      openingTime: "Instantáneo",
+      cyclesPerHour: "Alta autonomía"
+    },
     specs: {
-      "Frecuencia": "433.92 MHz Rolling Code",
-      "Canales": "Botones independientes para diferentes portones",
-      "Alcance": "Aprox. 30 a 50 metros en línea abierta",
-      "Batería": "Incluida"
+      "Frecuencia de transmisión": "433.92 MHz Rolling Code",
+      "Canales": "4 Botones independientes de pulsación firme",
+      "Alcance operativo": "30 a 50 metros en línea abierta",
+      "Batería": "Pila de litio 12V incluida"
     },
     imageUrl: "/assets/aistudio/image_5692190c.png",
     featured: false
   },
   {
     id: "prod-5-central-comando",
-    name: "Central de Comando Electrónica Multimarca",
-    category: "controles",
-    categoryLabel: "Controles y Placas",
+    name: "Central de Comando Electrónica Multimarca AXXESOS",
+    category: "automatizadores",
+    subcategory: "centrales",
+    categoryLabel: "Automatizadores",
+    subcategoryLabel: "Centrales Electrónicas",
     price: 48000,
     inStock: true,
     stockCountText: "En stock permanente",
     isExample: true,
-    badge: "Ejemplo - A CONFIRMAR",
-    shortDescription: "Placa de reemplazo compatible con motores monofásicos de portones corredizos y levadizos.",
-    fullDescription: "Plaqueta de repuesto para sustituir centrales dañadas por tormentas o picos de tensión. Receptor integrado, embrague electrónico, tiempo de pausa para cierre automático y conectores para luz y semáforo.",
+    badge: "Universal",
+    shortDescription: "Plaqueta electrónica para motores monofásicos con receptor incorporado, embrague electrónico y cierre automático.",
+    fullDescription: "Ideal para reparaciones rápidas en San Juan cuando una tormenta quema la placa original. Soporta finales de carrera magnéticos o mecánicos y botoneras cableadas.",
+    performance: {
+      voltage: "220V AC",
+      power: "Para motores hasta 1/2 HP",
+      maxWeight: "Multimarca",
+      openingTime: "Rampa de desaceleración ajustable",
+      cyclesPerHour: "Uso continuo"
+    },
     specs: {
-      "Compatibilidad": "Motores monofásicos hasta 1/2 HP",
-      "Memoria": "Hasta 100 controles remotos (A CONFIRMAR)",
-      "Funciones": "Cierre automático, golpe de ariete, rampa",
-      "Entradas": "Fotocélula, botonera de pared, fin de carrera"
+      "Compatibilidad": "Motores monofásicos de 220V hasta 1/2 HP",
+      "Memoria": "Hasta 120 controles remotos grabados",
+      "Salidas": "Luz de cortesía (220V) y semáforo vehicular",
+      "Entradas": "Fotocélula de seguridad, botonera y finales de carrera"
     },
     imageUrl: "/assets/aistudio/ea261b5f-4068-4d3f-9323-af85db0e676b_5aa9995c.jpg",
     featured: false
   },
   {
     id: "prod-6-fotocelulas-seguridad",
-    name: "Juego de Fotocélulas Infrarrojas de Seguridad",
-    category: "seguridad",
-    categoryLabel: "Accesorios y Seguridad",
+    name: "Juego de Fotocélulas Infrarrojas Anti-Aplastamiento",
+    category: "automatizadores",
+    subcategory: "accesorios",
+    categoryLabel: "Automatizadores",
+    subcategoryLabel: "Accesorios y Fotocélulas",
     price: 26000,
     inStock: true,
     stockCountText: "En stock",
     isExample: true,
-    badge: "Ejemplo - A CONFIRMAR",
-    shortDescription: "Sensor óptico emisor y receptor que detiene o invierte la marcha del portón ante la presencia de un auto o persona.",
-    fullDescription: "Accesorio indispensable para prevenir golpes contra vehículos, niños o mascotas. Si el haz infrarrojo es interrumpido mientras el portón está cerrando, se detiene inmediatamente.",
+    badge: "Seguridad",
+    shortDescription: "Sensor óptico emisor y receptor que detiene e invierte la marcha del portón ante la presencia de un auto, persona o mascota.",
+    fullDescription: "Accesorio indispensable de seguridad. Evita abolladuras en el automóvil y protege a niños y mascotas si el portón comienza a cerrar accidentalmente.",
+    performance: {
+      voltage: "12V / 24V AC/DC",
+      power: "Haz infrarrojo modulado",
+      maxWeight: "Alcance hasta 15 metros",
+      openingTime: "Respuesta en milisegundos",
+      cyclesPerHour: "Apto intemperie UV"
+    },
     specs: {
-      "Alcance": "Hasta 15 metros",
-      "Alimentación": "12V / 24V AC/DC",
-      "Contacto": "Normal abierto / Normal cerrado",
-      "Gabinete": "Apto intemperie con filtro solar UV"
+      "Alcance del haz": "Hasta 15 metros entre emisor y receptor",
+      "Alimentación": "12V o 24V AC/DC",
+      "Gabinete": "Protección contra lluvia, polvo y rayos solares UV",
+      "Contacto": "Relé conmutador NA y NC"
     },
     imageUrl: "/assets/aistudio/c8c8da8a-ffaf-4fe8-82fd-ed3c386f6ad8_f519ec85.jpg",
     featured: true
   },
   {
     id: "prod-7-cremallera-acero",
-    name: "Tramo de Cremallera de Acero Galvanizado (1 Metro)",
-    category: "repuestos",
-    categoryLabel: "Accesorios y Cremalleras",
+    name: "Tramo de Cremallera de Acero Galvanizado Módulo 4 (1 Metro)",
+    category: "ruedas",
+    subcategory: "rieles_cremalleras",
+    categoryLabel: "Ruedas y Herrajes",
+    subcategoryLabel: "Cremalleras y Perfiles Riel",
     price: 18000,
     inStock: true,
     stockCountText: "En stock",
     isExample: true,
-    badge: "Ejemplo - A CONFIRMAR",
-    shortDescription: "Barra dentada de acero galvanizado con bulones separadores roscados para soldar en portón.",
-    fullDescription: "Cremallera de paso estándar módulo 4 para portones corredizos pesados o de uso frecuente. Alta resistencia a la corrosión y desgaste por fricción.",
+    badge: "Acero Galvanizado",
+    shortDescription: "Barra dentada de acero macizo con 3 separadores roscados para soldar en el bastidor del portón.",
+    fullDescription: "Cremallera de paso estándar módulo 4 para portones corredizos residenciales, comerciales e industriales en San Juan. Resiste el sol, polvo y granizo sin deformarse ni oxidarse.",
+    performance: {
+      voltage: "Mecánico",
+      power: "Paso Módulo 4",
+      maxWeight: "Apto portones pesados",
+      openingTime: "Tracción uniforme",
+      cyclesPerHour: "Alta resistencia"
+    },
     specs: {
       "Longitud": "1.000 mm (1 metro)",
-      "Espesor": "Acero reforzado con 3 orejas de fijación",
-      "Paso": "Módulo 4 universal",
-      "Tratamiento": "Galvanizado anticorrosivo"
+      "Material": "Acero con baño de galvanizado en caliente",
+      "Espesor": "Chapa plegada de alta rigidez",
+      "Fijaciones": "3 Separadores cilíndricos con bulones incluidos"
     },
-    imageUrl: "/assets/aistudio/dd7b3dbf-077d-4688-8f70-81155689c7c2_777b42ff.jpg",
+    imageUrl: "/products/axxesos_sliding_motor.jpg",
     featured: false
   },
   {
     id: "prod-8-kit-cctv-4-camaras",
-    name: "Kit CCTV Grabador DVR + 4 Cámaras HD",
+    name: "Kit Circuito Cerrado CCTV (DVR + 4 Cámaras Full HD)",
     category: "seguridad",
-    categoryLabel: "CCTV y Alarmas",
+    subcategory: "camaras",
+    categoryLabel: "Seguridad y CCTV",
+    subcategoryLabel: "Cámaras de Seguridad (CCTV)",
     price: 240000,
     inStock: true,
     stockCountText: "Consultar modelos disponibles",
     isExample: true,
-    badge: "Ejemplo - A CONFIRMAR",
-    shortDescription: "Sistema de videovigilancia completo con 4 cámaras infrarrojas aptas para exterior y aplicación móvil.",
-    fullDescription: "Monitoreá tu hogar, cochera o empresa desde cualquier lugar. Incluye DVR de 4 canales, fuentes de alimentación, cables prearmados y configuración en su teléfono celular.",
+    badge: "Monitoreo 24/7",
+    shortDescription: "Sistema de videovigilancia completo con 4 cámaras infrarrojas aptas intemperie y visualización en tu celular.",
+    fullDescription: "Vigila tu portón, patio delantero y accesos desde cualquier lugar con tu teléfono. Incluye grabador DVR de 4 canales, cables, fuente y configuración remota.",
+    performance: {
+      voltage: "12V DC (fuente incluida)",
+      power: "Visión nocturna IR 20m",
+      maxWeight: "Exterior IP66",
+      openingTime: "Transmisión en vivo sin demora",
+      cyclesPerHour: "Grabación continua 24/7"
+    },
     specs: {
-      "Resolución": "Alta definición Full HD (A CONFIRMAR)",
-      "Visión nocturna": "Infrarrojos inteligentes hasta 20m",
-      "Acceso remoto": "App gratuita para Android y iPhone",
-      "Instalación": "Presupuestada según cableado y distancias"
+      "Resolución": "1080p Full HD",
+      "Cámaras": "4 Cámaras tipo bullet o domo para intemperie",
+      "Visión nocturna": "Infrarrojo inteligente hasta 20 metros",
+      "App móvil": "Acceso remoto gratuito para Android y iOS"
     },
     imageUrl: "/assets/aistudio/image_5692190c.png",
     featured: true
+  },
+  {
+    id: "prod-cerco-electrico-perimetral",
+    name: "Central de Cerco Eléctrico de Seguridad Perimetral",
+    category: "seguridad",
+    subcategory: "cercos",
+    categoryLabel: "Seguridad y CCTV",
+    subcategoryLabel: "Cercos Eléctricos y Concertinas",
+    price: 165000,
+    inStock: true,
+    stockCountText: "Equipos certificados para instalación",
+    isExample: true,
+    badge: "Disuasión Total",
+    shortDescription: "Electrificador de alta tensión no letal con alarma sonora ante corte de alambre o intento de intrusión.",
+    fullDescription: "La barrera perimetral más efectiva para evitar que trepen muros y rejas. Emite pulsos de alto voltaje disuasivos cumpliendo con las normas de seguridad eléctrica vigentes.",
+    performance: {
+      voltage: "220V con batería de respaldo 12V",
+      power: "Pulsos de 8.000V a 12.000V no letales",
+      maxWeight: "Perímetros hasta 1.500 metros",
+      openingTime: "Disparo de alarma instantáneo",
+      cyclesPerHour: "Operación 24/7 ininterrumpida"
+    },
+    specs: {
+      "Tensión de salida": "Regulable hasta 12.000 Volts",
+      "Batería de emergencia": "Garantiza funcionamiento ante cortes de luz",
+      "Sirena": "Salida para sirena de 120 dB exterior con flash",
+      "Normativa": "Homologado para uso en seguridad perimetral"
+    },
+    imageUrl: "/assets/aistudio/dd7b3dbf-077d-4688-8f70-81155689c7c2_777b42ff.jpg",
+    featured: false
   }
 ];
 
