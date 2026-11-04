@@ -348,6 +348,7 @@ export const CATALOG_CATEGORIES: CatalogCategory[] = [
       { id: 'corredizos', label: 'Corredizos', parentCategoryId: 'automatizadores' },
       { id: 'levadizos', label: 'Levadizos', parentCategoryId: 'automatizadores' },
       { id: 'batientes', label: 'Pivotantes / Batientes', parentCategoryId: 'automatizadores' },
+      { id: 'cortinas', label: 'Cortinas Metálicas', parentCategoryId: 'automatizadores' },
       { id: 'motores_wifi', label: 'Motores y Módulos WiFi', parentCategoryId: 'automatizadores' },
       { id: 'centrales', label: 'Centrales Electrónicas', parentCategoryId: 'automatizadores' },
       { id: 'controles', label: 'Controles Remotos', parentCategoryId: 'automatizadores' },
@@ -715,6 +716,216 @@ export const INITIAL_PRODUCTS: ProductItem[] = [
       "Fijación": "Para abulonar sobre columna de mampostería o estructura metálica"
     },
     imageUrl: "/assets/aistudio/dd7b3dbf-077d-4688-8f70-81155689c7c2_777b42ff.jpg",
+    featured: false
+  },
+  {
+    id: "prod-estabilizador-l-nylon",
+    name: "Estabilizador en L Reforzado con Rodillo de Nylon Regulable",
+    category: "estabilizadores",
+    subcategory: "estabilizadores_l",
+    categoryLabel: "Estabilizadores",
+    subcategoryLabel: "Estabilizadores en L",
+    price: 14500,
+    inStock: true,
+    stockCountText: "En stock permanente",
+    isExample: true,
+    badge: "Antivibración",
+    shortDescription: "Soporte angular en escuadra de chapa gruesa con rodillo de nylon ajustable para guía superior en muros y pilares.",
+    fullDescription: "Permite una regulación milimétrica contra el bastidor del portón corredizo, eliminando vibraciones molestas provocadas por ráfagas de viento y asegurando un desplazamiento suave y seguro.",
+    performance: {
+      voltage: "Mecánico",
+      power: "N/A",
+      maxWeight: "Apto portones hasta 800 kg",
+      openingTime: "Alineación continua",
+      cyclesPerHour: "Intensivo"
+    },
+    specs: {
+      "Material soporte": "Chapa de acero de 4.8 mm electrocincada",
+      "Rodillo": "Nylon virgen de 40mm con eje de acero roscado",
+      "Regulación": "Corredera lateral de hasta 60 mm",
+      "Fijación": "Perforaciones para brocas de 10mm o soldadura directa"
+    },
+    imageUrl: "/assets/aistudio/c8c8da8a-ffaf-4fe8-82fd-ed3c386f6ad8_f519ec85.jpg",
+    featured: false
+  },
+  {
+    id: "prod-rodillo-guia-nylon-40",
+    name: "Juego de Rodillos de Guía Superior de Nylon (40mm x 60mm)",
+    category: "estabilizadores",
+    subcategory: "rodillos",
+    categoryLabel: "Estabilizadores",
+    subcategoryLabel: "Rodillos de Guía",
+    price: 9800,
+    inStock: true,
+    stockCountText: "En stock en Mariano Moreno 297",
+    isExample: true,
+    badge: "Repuesto Original",
+    shortDescription: "Par de rodillos de nylon técnico con bulón y tuerca autofrenante para recambio de puentes guía desgastados.",
+    fullDescription: "Rodillos cilíndricos de alta resistencia mecánica que no rayan la pintura del portón ni generan chirridos. Resistentes al sol, polvo y factores climáticos extremos de San Juan.",
+    performance: {
+      voltage: "Mecánico",
+      power: "N/A",
+      maxWeight: "Universal",
+      openingTime: "Giro ultrasuave",
+      cyclesPerHour: "Ilimitado"
+    },
+    specs: {
+      "Diámetro exterior": "40 mm",
+      "Altura del rodillo": "60 mm",
+      "Material": "Nylon de ingeniería de alto impacto",
+      "Eje": "Bulón de acero roscado 1/2\" con arandelas y tuerca"
+    },
+    imageUrl: "/assets/aistudio/dd7b3dbf-077d-4688-8f70-81155689c7c2_777b42ff.jpg",
+    featured: false
+  },
+  {
+    id: "prod-cierrapuertas-aereo-hidraulico",
+    name: "Cierrapuertas Aéreo Hidráulico AXXESOS Regulable (45 - 65 kg)",
+    category: "electrocerraduras",
+    subcategory: "cierrapuertas",
+    categoryLabel: "Electrocerraduras y Cierrapuertas",
+    subcategoryLabel: "Cierrapuertas Hidráulicos",
+    price: 44000,
+    inStock: true,
+    stockCountText: "En stock",
+    isExample: true,
+    badge: "Hidráulico",
+    shortDescription: "Brazo hidráulico con doble válvula de regulación de velocidad de cierre y golpe final.",
+    fullDescription: "Apto para puertas peatonales de acceso a cocheras, portones livianos, consorcios y oficinas. Garantiza que la puerta siempre quede cerrada para accionar la traba electromecánica.",
+    performance: {
+      voltage: "Mecánico / Hidráulico",
+      power: "Fuerza EN 3",
+      maxWeight: "Puertas hasta 65 kg / 950 mm de ancho",
+      openingTime: "Apertura hasta 180°",
+      cyclesPerHour: "500.000 ciclos probados"
+    },
+    specs: {
+      "Capacidad de carga": "45 a 65 kg",
+      "Regulación": "2 Válvulas independientes (velocidad y golpe final)",
+      "Brazo": "Articulado de acero reforzado",
+      "Acabado": "Pintura epoxi gris plata antioxidación"
+    },
+    imageUrl: "/products/axxesos_electrolock.jpg",
+    featured: false
+  },
+  {
+    id: "prod-rueda-canal-v-80mm",
+    name: "Rueda de Acero para Portón Corredizo Canal en V (80mm)",
+    category: "ruedas",
+    subcategory: "ruedas_v",
+    categoryLabel: "Ruedas y Herrajes",
+    subcategoryLabel: "Canal en V",
+    price: 16500,
+    inStock: true,
+    stockCountText: "En stock permanente",
+    isExample: true,
+    badge: "Rulemán Blindado",
+    shortDescription: "Rueda torneada en acero macizo para rodar sobre perfil ángulo en V. Rulemán blindado con lubricación permanente.",
+    fullDescription: "Pieza clave en cualquier portón corredizo. Maquinado preciso que evita descarrilamientos y reduce al mínimo el esfuerzo del motor automatizador.",
+    performance: {
+      voltage: "Mecánico",
+      power: "Carga 300 kg por unidad",
+      maxWeight: "300 kg / rueda",
+      openingTime: "Rodado liviano",
+      cyclesPerHour: "Intensivo"
+    },
+    specs: {
+      "Diámetro": "80 mm",
+      "Canal": "V a 90 grados para perfil ángulo",
+      "Rodamiento": "1 Rulemán blindado 6204-2RS de alta precisión",
+      "Fijación": "Eje bulón con tuerca autofrenante"
+    },
+    imageUrl: "/products/axxesos_gate_wheel.jpg",
+    featured: false
+  },
+  {
+    id: "prod-rueda-soporte-embutir-v",
+    name: "Rueda con Caja Soporte para Embutir Canal en V (80mm)",
+    category: "ruedas",
+    subcategory: "ruedas_v_soporte",
+    categoryLabel: "Ruedas y Herrajes",
+    subcategoryLabel: "Con Soporte Canal en V",
+    price: 19800,
+    inStock: true,
+    stockCountText: "En stock",
+    isExample: true,
+    badge: "Fácil Montaje",
+    shortDescription: "Rueda montada dentro de caja metálica para encastrar y soldar directamente en el caño inferior del portón.",
+    fullDescription: "Ideal para fabricación de portones nuevos o recambio ágil sin necesidad de tornear soportes. Caja de chapa estampada de 3.2 mm que protege el rodamiento de tierra y suciedad.",
+    performance: {
+      voltage: "Mecánico",
+      power: "Carga 350 kg",
+      maxWeight: "350 kg",
+      openingTime: "Rodado suave",
+      cyclesPerHour: "Uso continuo"
+    },
+    specs: {
+      "Diámetro rueda": "80 mm",
+      "Caja soporte": "Acero estampado para embutir en caño de 40x80 o 50x80",
+      "Canal": "En V rectificado",
+      "Protección": "Chapa cincada dorada antioxidante"
+    },
+    imageUrl: "/products/axxesos_gate_wheel.jpg",
+    featured: false
+  },
+  {
+    id: "prod-rueda-canal-redondo-80mm",
+    name: "Rueda de Acero Canal Redondo (Tubo) 80mm para Portón",
+    category: "ruedas",
+    subcategory: "ruedas_redondo",
+    categoryLabel: "Ruedas y Herrajes",
+    subcategoryLabel: "Canal Redondo",
+    price: 17500,
+    inStock: true,
+    stockCountText: "En stock",
+    isExample: true,
+    badge: "Canal Tubo",
+    shortDescription: "Rueda de acero con canal semicircular para deslizar sobre guía de caño redondo de 3/4\" o 1\".",
+    fullDescription: "Excelente alternativa para entradas donde la guía sobre piso es un tubo redondo embutido. Máxima suavidad de marcha y menor acumulación de piedras o barro.",
+    performance: {
+      voltage: "Mecánico",
+      power: "Carga 300 kg",
+      maxWeight: "300 kg por rueda",
+      openingTime: "Marcha suave",
+      cyclesPerHour: "Uso continuo"
+    },
+    specs: {
+      "Diámetro": "80 mm",
+      "Canal": "Semicircular para caño redondo de 19 mm a 25 mm",
+      "Rodamiento": "Rulemán blindado sellado contra polvo",
+      "Eje": "Bulón de acero cincado con tuerca"
+    },
+    imageUrl: "/products/axxesos_gate_wheel.jpg",
+    featured: false
+  },
+  {
+    id: "prod-motor-cortina-tubular-axxesos",
+    name: "Motor Tubular para Cortinas Metálicas Enrollables (140 kg)",
+    category: "automatizadores",
+    subcategory: "cortinas",
+    categoryLabel: "Automatizadores",
+    subcategoryLabel: "Cortinas Metálicas",
+    price: 195000,
+    inStock: true,
+    stockCountText: "Disponible con colocación",
+    isExample: true,
+    badge: "Comercial e Industrial",
+    shortDescription: "Automatizador interno para eje de persianas y cortinas metálicas comerciales de locales en San Juan.",
+    fullDescription: "Automatizá la cortina metálica de tu negocio sin ocupar espacio lateral. Motor tubular que se inserta dentro del caño octogonal o redondo con electrofreno de seguridad y accionamiento a control remoto o botonera.",
+    performance: {
+      voltage: "220V AC (50 Hz)",
+      power: "280W / 50 Nm",
+      maxWeight: "Hasta 140 kg de cortina",
+      openingTime: "Apertura completa en 25 segundos",
+      cyclesPerHour: "Apto locales comerciales"
+    },
+    specs: {
+      "Torque": "50 Nm",
+      "Capacidad de elevación": "Hasta 140 kg",
+      "Accionamiento de emergencia": "Manivela manual para corte de energía",
+      "Incluye": "Central con receptora, 2 controles remotos y adaptadores de eje"
+    },
+    imageUrl: "/products/axxesos_sliding_motor.jpg",
     featured: false
   },
   {

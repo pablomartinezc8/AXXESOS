@@ -47,7 +47,33 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'name'>('default');
   const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(null);
 
-  // When selectedCategory changes, reset subcategory to 'todos'
+  // Synchronize category when initialCategory prop changes (e.g. from Header dropdown menu)
+  React.useEffect(() => {
+    if (initialCategory) {
+      setSelectedCategory(initialCategory);
+    }
+  }, [initialCategory]);
+
+  // Synchronize subcategory when initialSubcategory prop changes
+  React.useEffect(() => {
+    if (initialSubcategory) {
+      setSelectedSubcategory(initialSubcategory);
+    }
+  }, [initialSubcategory]);
+
+  // Smooth scroll to catalog filters when navigating directly to a category
+  React.useEffect(() => {
+    if (initialCategory && initialCategory !== 'todos') {
+      setTimeout(() => {
+        const el = document.getElementById('catalogo-filtros');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  }, [initialCategory, initialSubcategory]);
+
+  // When selectedCategory changes via tabs, reset subcategory to 'todos'
   const handleCategorySelect = (catId: string) => {
     setSelectedCategory(catId);
     setSelectedSubcategory('todos');
@@ -137,7 +163,7 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
         </div>
 
         {/* 1. Mega Category Tabs (PUNTO 2: Categorías de BBS Motion) */}
-        <div className="mb-6">
+        <div id="catalogo-filtros" className="mb-6 scroll-mt-24">
           <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
             {/* "Todos" button */}
             <button

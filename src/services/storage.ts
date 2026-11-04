@@ -198,7 +198,21 @@ export const StorageService = {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
       if (stored) {
-        return JSON.parse(stored);
+        const parsed: ProductItem[] = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const existingIds = new Set(parsed.map((p) => p.id));
+          let hasNew = false;
+          INITIAL_PRODUCTS.forEach((ip) => {
+            if (!existingIds.has(ip.id)) {
+              parsed.push(ip);
+              hasNew = true;
+            }
+          });
+          if (hasNew) {
+            this.saveProducts(parsed);
+          }
+          return parsed;
+        }
       }
     } catch (e) {
       console.warn("Error leyendo productos", e);
