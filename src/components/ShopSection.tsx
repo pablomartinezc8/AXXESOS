@@ -90,22 +90,21 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
 
           <div className="flex items-center gap-3">
             <button
-              onClick={onOpenAdmin}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg border border-zinc-300 bg-zinc-50 hover:bg-zinc-100 text-xs font-semibold text-zinc-700 shadow-sm transition-all"
+              onClick={() => onOpenQuoteModal()}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-xs font-bold text-white shadow-md transition-all active:scale-95 cursor-pointer uppercase tracking-wider"
             >
-              <PlusCircle className="w-4 h-4 text-red-600" />
-              <span>Cargar Producto Nuevo (Admin)</span>
+              <span>Presupuesto con Instalación</span>
             </button>
           </div>
         </div>
 
-        {/* Notice of Example Prices & Data Rule */}
-        <div className="mb-8 p-4 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-3 text-xs text-amber-900">
-          <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+        {/* Store Notice for Customers */}
+        <div className="mb-8 p-4 rounded-xl bg-zinc-50 border border-zinc-200 flex items-start gap-3 text-xs text-zinc-700">
+          <Info className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
           <div className="space-y-0.5">
-            <span className="font-bold">Aviso de precios y marcas:</span>
-            <p className="text-amber-800">
-              Los productos que figuran a continuación son de <strong>ejemplo orientativo («A CONFIRMAR»)</strong> para que el titular cargue sus marcas oficiales, listas de precios vigentes y stock en el panel de administración.
+            <span className="font-bold text-zinc-900">Venta de equipos e instalación en San Juan:</span>
+            <p className="text-zinc-600">
+              Precios y modelos orientativos para venta directa en local y proyectos con colocación. Para consultar compatibilidad de controles remotos, stock de cremalleras o solicitar presupuesto técnico a medida, contactanos sin cargo.
             </p>
           </div>
         </div>
@@ -213,8 +212,8 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
 
                     {/* Badge */}
                     <div className="absolute top-2.5 left-2.5">
-                      <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-amber-500 text-zinc-950 shadow">
-                        {product.badge || "Ejemplo - A CONFIRMAR"}
+                      <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-zinc-900/90 text-white border border-zinc-700 shadow backdrop-blur-sm">
+                        {product.badge && !product.badge.includes('A CONFIRMAR') ? product.badge : "Equipo Oficial"}
                       </span>
                     </div>
 
@@ -247,7 +246,7 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
                 {/* Price and Add button */}
                 <div className="pt-4 mt-4 border-t border-zinc-100 flex items-center justify-between gap-2">
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-zinc-400 uppercase font-semibold">Precio orientativo</span>
+                    <span className="text-[10px] text-zinc-400 uppercase font-semibold">Precio de referencia</span>
                     <span className="text-base sm:text-lg font-black text-zinc-900">
                       {formatCurrency(product.price)}
                     </span>

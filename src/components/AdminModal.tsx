@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { CompanyConfig, ProjectItem, ProductItem } from '../config/company';
+import { 
+  CompanyConfig, 
+  ProjectItem, 
+  ProductItem, 
+  sanitizeWhatsAppNumber, 
+  formatWhatsAppDisplay 
+} from '../config/company';
 import { 
   StorageService, 
   CarouselSlide, 
@@ -294,10 +300,27 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   };
 
   // Save Company Config Form
+  const saveConfigData = (andClose: boolean = false) => {
+    const cleanNumber = sanitizeWhatsAppNumber(editableConfig.whatsappNumber);
+    const cleanDisplay = formatWhatsAppDisplay(cleanNumber);
+    const updated: CompanyConfig = {
+      ...editableConfig,
+      whatsappNumber: cleanNumber,
+      whatsappDisplay: cleanDisplay
+    };
+    setEditableConfig(updated);
+    onSaveConfig(updated);
+    showSaveSuccess("¡Datos de empresa y WhatsApp actualizados en la web!");
+    if (andClose) {
+      setTimeout(() => {
+        onClose();
+      }, 400);
+    }
+  };
+
   const handleSaveCompanyConfig = (e: React.FormEvent) => {
     e.preventDefault();
-    onSaveConfig(editableConfig);
-    showSaveSuccess("¡Datos de empresa y textos actualizados!");
+    saveConfigData(false);
   };
 
   // Export Data JSON
@@ -1095,37 +1118,74 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-zinc-300 mb-1">Teléfono Principal</label>
+                      <label className="block text-xs font-bold text-zinc-300 mb-1">
+                        Teléfono Principal (San Juan - Solo Llamadas)
+                      </label>
                       <input
                         type="text"
                         value={editableConfig.phonePrimary}
                         onChange={(e) => setEditableConfig({ ...editableConfig, phonePrimary: e.target.value })}
                         className="w-full px-3 py-2 bg-zinc-950 border border-zinc-700 rounded-lg text-xs text-white font-mono"
+                        placeholder="0264 406-2942"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-zinc-300 mb-1">Teléfono Secundario</label>
+                      <label className="block text-xs font-bold text-zinc-300 mb-1">
+                        Teléfono Secundario (San Juan - Solo Llamadas)
+                      </label>
                       <input
                         type="text"
                         value={editableConfig.phoneSecondary}
                         onChange={(e) => setEditableConfig({ ...editableConfig, phoneSecondary: e.target.value })}
                         className="w-full px-3 py-2 bg-zinc-950 border border-zinc-700 rounded-lg text-xs text-white font-mono"
+                        placeholder="(0264) 422-5531"
                       />
+                      <span className="text-[10px] text-zinc-500">Líneas fijas para que clientes llamen directamente al local</span>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-amber-400 mb-1">Número de WhatsApp (wa.me) «A CONFIRMAR»</label>
+                      <label className="block text-xs font-bold text-zinc-300 mb-1">Celular Directo San Juan (CEL)</label>
+                      <input
+                        type="text"
+                        value={editableConfig.phoneMobile || ''}
+                        onChange={(e) => setEditableConfig({ ...editableConfig, phoneMobile: e.target.value })}
+                        className="w-full px-3 py-2 bg-zinc-950 border border-zinc-700 rounded-lg text-xs text-white font-mono"
+                        placeholder="264-443-3000"
+                      />
+                      <span className="text-[10px] text-zinc-500">Celular de contacto directo oficial (PDF presupuestos)</span>
+                    </div>
+
+                    <div className="p-3 bg-zinc-950 rounded-xl border border-emerald-500/50">
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs font-bold text-emerald-400">
+                          WhatsApp de la Empresa (Mensajes y Presupuestos)
+                        </label>
+                        <span className="text-[11px] font-mono font-bold text-emerald-300">
+                          {formatWhatsAppDisplay(editableConfig.whatsappNumber)}
+                        </span>
+                      </div>
                       <input
                         type="text"
                         value={editableConfig.whatsappNumber}
                         onChange={(e) => setEditableConfig({ ...editableConfig, whatsappNumber: e.target.value })}
-                        className="w-full px-3 py-2 bg-zinc-950 border border-amber-600/50 rounded-lg text-xs text-white font-mono"
-                        placeholder="549264..."
+                        className="w-full px-3 py-2 bg-zinc-900 border border-emerald-600/50 rounded-lg text-xs text-white font-mono focus:ring-2 focus:ring-emerald-500"
+                        placeholder="1162575805"
                       />
-                      <span className="text-[10px] text-zinc-400">Formato numérico internacional sin guiones (ej. 5492644062942)</span>
+                      <div className="flex items-center justify-between text-[10px] text-zinc-400 mt-1.5">
+                        <span>Número móvil que recibe pedidos, cotizaciones y chats.</span>
+                        <a
+                          href={`https://wa.me/${sanitizeWhatsAppNumber(editableConfig.whatsappNumber)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1"
+                        >
+                          <span>Probar enlace</span>
+                          <ExternalLink className="w-2.5 h-2.5" />
+                        </a>
+                      </div>
                     </div>
                   </div>
 
@@ -1185,6 +1245,31 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-red-400 mb-1">Años de Trayectoria (Hoy 28 años)</label>
+                      <input
+                        type="number"
+                        value={editableConfig.yearsOfExperience || 28}
+                        onChange={(e) => setEditableConfig({ ...editableConfig, yearsOfExperience: Number(e.target.value) })}
+                        className="w-full px-3 py-2 bg-zinc-950 border border-zinc-700 rounded-lg text-xs text-white font-mono"
+                        placeholder="28"
+                      />
+                      <span className="text-[10px] text-zinc-500">Fundada en 1998 — 28 años de trayectoria ininterrumpida en San Juan</span>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-300 mb-1">Texto del Distintivo de Trayectoria</label>
+                      <input
+                        type="text"
+                        value={editableConfig.experienceBadgeText || ''}
+                        onChange={(e) => setEditableConfig({ ...editableConfig, experienceBadgeText: e.target.value })}
+                        className="w-full px-3 py-2 bg-zinc-950 border border-zinc-700 rounded-lg text-xs text-white"
+                        placeholder="28 Años de Trayectoria en San Juan (1998 — 2026)"
+                      />
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-xs font-bold text-zinc-300 mb-1">Quiénes Somos - Resumen Principal</label>
                     <textarea
@@ -1205,13 +1290,24 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-2 cursor-pointer shadow-md"
-                  >
-                    <Save className="w-4 h-4" />
-                    <span>Guardar Cambios de la Empresa</span>
-                  </button>
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
+                    <button
+                      type="submit"
+                      className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-2 cursor-pointer shadow-md"
+                    >
+                      <Save className="w-4 h-4" />
+                      <span>Guardar Cambios</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => saveConfigData(true)}
+                      className="bg-zinc-800 hover:bg-zinc-700 text-white px-5 py-3 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer transition-colors border border-zinc-700"
+                    >
+                      <Check className="w-4 h-4 text-emerald-400" />
+                      <span>Guardar y ver en la web</span>
+                    </button>
+                  </div>
                 </form>
               )}
 

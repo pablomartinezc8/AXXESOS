@@ -60,8 +60,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
           {/* Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-            <span className="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-500 text-zinc-950 shadow">
-              {product.badge || "Ejemplo - A CONFIRMAR"}
+            <span className="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-zinc-900 text-white border border-zinc-700 shadow">
+              {product.badge && !product.badge.includes('A CONFIRMAR') ? product.badge : "Equipo Oficial"}
             </span>
             <span className="px-2.5 py-0.5 rounded text-[10px] font-semibold bg-zinc-950/80 text-zinc-300 border border-zinc-800">
               {product.categoryLabel}
@@ -92,8 +92,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 <span className="text-3xl font-black text-zinc-950">
                   {formattedPrice}
                 </span>
-                <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-medium">
-                  Precio orientativo «A CONFIRMAR»
+                <span className="text-xs text-zinc-600 bg-zinc-100 border border-zinc-200 px-2 py-0.5 rounded font-medium">
+                  Precio de referencia
                 </span>
               </div>
             </div>

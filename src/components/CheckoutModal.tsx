@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CustomerOrder, OrderItem, StorageService } from '../services/storage';
-import { CompanyConfig } from '../config/company';
+import { CompanyConfig, sanitizeWhatsAppNumber } from '../config/company';
 import { 
   X, 
   Send, 
@@ -87,7 +87,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       `*TOTAL ESTIMADO:* ${encodeURIComponent(formatPrice(subtotal))}%0A%0A` +
       `_Aguardamos su confirmación de stock y tiempo de entrega. Muchas gracias._`;
 
-    const targetPhone = config.whatsappNumber.replace(/[^0-9]/g, '');
+    const targetPhone = sanitizeWhatsAppNumber(config.whatsappNumber);
     const waUrl = `https://wa.me/${targetPhone}?text=${whatsappMessage}`;
 
     // Open WhatsApp in new tab

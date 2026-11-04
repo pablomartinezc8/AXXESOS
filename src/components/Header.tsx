@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Logo } from './Logo';
-import { ShoppingBag, Menu, X, PhoneCall, ShieldCheck, ChevronRight } from 'lucide-react';
+import { ShoppingBag, Menu, X, PhoneCall, ChevronRight } from 'lucide-react';
 import { CompanyConfig } from '../config/company';
 
 interface HeaderProps {
@@ -92,17 +92,6 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right Action Icons & CTA */}
           <div className="flex items-center space-x-3">
-            {/* Quick Admin Access */}
-            <button
-              onClick={onOpenAdmin}
-              title="Panel de Administración del Propietario"
-              className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg transition-colors border border-zinc-800 text-xs flex items-center gap-1.5"
-              aria-label="Panel Admin"
-            >
-              <ShieldCheck className="w-4 h-4 text-red-500" />
-              <span className="hidden xl:inline text-zinc-300 font-mono text-[11px]">Admin</span>
-            </button>
-
             {/* Cart Button */}
             <button
               onClick={onOpenCart}

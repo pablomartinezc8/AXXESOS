@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MessageCircle, X } from 'lucide-react';
-import { CompanyConfig } from '../config/company';
+import { CompanyConfig, sanitizeWhatsAppNumber } from '../config/company';
 
 interface FloatingWhatsAppProps {
   config: CompanyConfig;
@@ -9,7 +9,7 @@ interface FloatingWhatsAppProps {
 export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({ config }) => {
   const [showBalloon, setShowBalloon] = useState(true);
 
-  const cleanNumber = config.whatsappNumber.replace(/[^0-9]/g, '');
+  const cleanNumber = sanitizeWhatsAppNumber(config.whatsappNumber);
   const defaultMessage = encodeURIComponent("¡Hola AXXESOS! Quisiera hacer una consulta sobre automatización de portones y seguridad electrónica.");
   const waUrl = `https://wa.me/${cleanNumber}?text=${defaultMessage}`;
 

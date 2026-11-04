@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CompanyConfig } from '../config/company';
+import { CompanyConfig, sanitizeWhatsAppNumber, formatWhatsAppDisplay } from '../config/company';
 import { StorageService } from '../services/storage';
 import { 
   MapPin, 
@@ -10,9 +10,11 @@ import {
   Send, 
   CheckCircle2, 
   MessageSquare, 
+  MessageCircle,
   Mail, 
   ShieldAlert,
-  ArrowRight
+  ArrowRight,
+  ExternalLink
 } from 'lucide-react';
 
 interface ContactSectionProps {
@@ -30,6 +32,9 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
   const [serviceInterest, setServiceInterest] = useState(prefilledInterest || 'Presupuesto de Portón');
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
+
+  const cleanWaNumber = sanitizeWhatsAppNumber(config.whatsappNumber);
+  const displayWa = config.whatsappDisplay || formatWhatsAppDisplay(config.whatsappNumber);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,8 +63,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
       (message ? `*Mensaje:* ${encodeURIComponent(message)}%0A` : '') +
       `%0A_Agradezco su pronta respuesta y asesoramiento técnico._`;
 
-    const targetPhone = config.whatsappNumber.replace(/[^0-9]/g, '');
-    const waUrl = `https://wa.me/${targetPhone}?text=${waText}`;
+    const waUrl = `https://wa.me/${cleanWaNumber}?text=${waText}`;
 
     // Open WhatsApp
     window.open(waUrl, '_blank');
@@ -98,9 +102,72 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                 </span>
               </h3>
 
-              <div className="space-y-5">
+              <div className="space-y-4">
+                {/* WhatsApp Oficial Directo */}
+                <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/40 flex items-start justify-between gap-3 shadow-lg">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center shrink-0 text-emerald-400">
+                      <MessageCircle className="w-5 h-5" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-white text-xs sm:text-sm">WhatsApp Oficial</span>
+                        <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-semibold border border-emerald-500/30">
+                          Mensajes y Cotizaciones
+                        </span>
+                      </div>
+                      <div className="text-emerald-400 font-mono font-bold text-sm sm:text-base">
+                        {displayWa}
+                      </div>
+                      <p className="text-[11px] text-zinc-400">
+                        Atención rápida para consultas de portones, kits y fotos de tu instalación.
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href={`https://wa.me/${cleanWaNumber}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-md active:scale-95 cursor-pointer"
+                  >
+                    <span>Abrir Chat</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+
+                {/* Landline Phones (San Juan) */}
+                <div className="flex items-start gap-3.5 p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/80">
+                  <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0 text-red-500">
+                    <Phone className="w-5 h-5" />
+                  </div>
+                  <div className="space-y-1 text-xs sm:text-sm">
+                    <div className="font-bold text-white flex items-center gap-2">
+                      <span>Teléfonos de San Juan</span>
+                      <span className="text-[10px] text-zinc-400 font-normal bg-zinc-800 px-1.5 py-0.5 rounded">
+                        Llamadas Telefónicas
+                      </span>
+                    </div>
+                    <div className="text-zinc-300 font-mono font-medium flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                      {config.phoneMobile && (
+                        <a href={`tel:${config.phoneMobile}`} className="text-red-400 hover:text-red-300 font-bold transition-colors flex items-center gap-1">
+                          <span>📱 CEL: {config.phoneMobile}</span>
+                        </a>
+                      )}
+                      <a href={`tel:${config.phonePrimary}`} className="hover:text-white transition-colors">
+                        📞 TEL: {config.phonePrimary}
+                      </a>
+                      <a href={`tel:${config.phoneSecondary}`} className="text-zinc-400 hover:text-white transition-colors">
+                        📞 TEL: {config.phoneSecondary}
+                      </a>
+                    </div>
+                    <div className="text-[11px] text-zinc-400">
+                      Atención telefónica directa en San Juan y local de Mariano Moreno Este 297.
+                    </div>
+                  </div>
+                </div>
+
                 {/* Address */}
-                <div className="flex items-start gap-3.5">
+                <div className="flex items-start gap-3.5 p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/80">
                   <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0 text-red-500">
                     <MapPin className="w-5 h-5" />
                   </div>
@@ -108,26 +175,6 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     <div className="font-bold text-white">Dirección de Atención</div>
                     <div className="text-zinc-300">{config.address}</div>
                     <div className="text-zinc-400 text-xs">{config.postalCode}, {config.city}, {config.province}, Argentina</div>
-                  </div>
-                </div>
-
-                {/* Phones */}
-                <div className="flex items-start gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0 text-red-500">
-                    <Phone className="w-5 h-5" />
-                  </div>
-                  <div className="space-y-0.5 text-xs sm:text-sm">
-                    <div className="font-bold text-white">Teléfonos de Contacto</div>
-                    <div className="text-zinc-300 font-mono font-medium">
-                      <a href={`tel:${config.phonePrimary}`} className="hover:text-red-400 transition-colors">
-                        {config.phonePrimary}
-                      </a>
-                    </div>
-                    <div className="text-zinc-400 font-mono text-xs">
-                      <a href={`tel:${config.phoneSecondary}`} className="hover:text-red-400 transition-colors">
-                        Otro teléfono: {config.phoneSecondary}
-                      </a>
-                    </div>
                   </div>
                 </div>
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { CompanyConfig } from '../config/company';
-import { ShieldCheck, MapPin, Award, Clock, Star, Edit3, ArrowRight } from 'lucide-react';
+import { ShieldCheck, MapPin, Award, Clock, Star, ArrowRight } from 'lucide-react';
 import { Logo } from './Logo';
 
 interface AboutSectionProps {
@@ -35,20 +35,31 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                   <span className="text-xs text-zinc-400 font-mono">Desde 1998</span>
                 </div>
 
-                {/* 25 Años Emblem from user logo */}
-                <div className="bg-zinc-900/90 rounded-xl p-5 border border-zinc-800 text-center space-y-2">
-                  <div className="flex justify-center mb-1">
-                    <Logo variant="icon" size="md" />
+                {/* 28 Años de Trayectoria Oficial */}
+                <div className="bg-gradient-to-b from-zinc-900 to-zinc-950 rounded-2xl p-6 border border-zinc-800 text-center space-y-3 shadow-inner">
+                  <div className="flex justify-center">
+                    <img 
+                      src="/axxesos_badge_round.png" 
+                      alt="AXXESOS 28 Años de Trayectoria en San Juan" 
+                      className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+                      loading="eager"
+                    />
                   </div>
-                  <span className="inline-block px-2.5 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-red-950 text-red-400 border border-red-800/60">
-                    Distintivo Institucional
-                  </span>
-                  <div className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-                    25 ANIVERSARIO
+                  <div className="space-y-1">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-red-950/80 text-red-400 border border-red-800/60">
+                      <Award className="w-3.5 h-3.5 text-red-500" />
+                      Trayectoria Comprobada
+                    </span>
+                    <div className="text-3xl sm:text-4xl font-black text-white tracking-tight pt-1">
+                      28 AÑOS
+                    </div>
+                    <p className="text-xs text-zinc-200 font-medium tracking-wide">
+                      Automatización y Seguridad en San Juan
+                    </p>
+                    <p className="text-[11px] text-zinc-400 font-mono">
+                      1998 — 2026 • San Juan, Argentina
+                    </p>
                   </div>
-                  <p className="text-xs text-zinc-300 font-mono tracking-widest">
-                    1998 — 2023 <span className="text-zinc-500 text-[10px] ml-1">(A CONFIRMAR)</span>
-                  </p>
                 </div>
 
                 {/* Real Highlights Grid */}
@@ -81,18 +92,6 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                 </div>
               </div>
             </div>
-
-            {/* Prompt for Admin Owner to customize */}
-            <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-between text-xs text-zinc-600">
-              <span className="text-zinc-500">¿Sos el titular de AXXESOS?</span>
-              <button
-                onClick={onOpenAdmin}
-                className="inline-flex items-center gap-1 text-red-600 hover:text-red-700 font-semibold cursor-pointer"
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-                <span>Editar este texto en Admin</span>
-              </button>
-            </div>
           </div>
 
           {/* Right Column: Company Story & Value Proposition */}
@@ -117,20 +116,15 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
               </p>
             </div>
 
-            {/* Note about placeholders and confirmation */}
-            <div className="p-4 rounded-xl bg-amber-50/80 border border-amber-200 text-amber-900 text-xs space-y-1.5">
-              <div className="font-bold flex items-center gap-1.5 text-amber-800">
-                <Award className="w-4 h-4 text-amber-600" />
-                <span>Parámetros de empresa marcados como «A CONFIRMAR»:</span>
+            {/* Trust and Quality Commitment Card */}
+            <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-800 text-xs space-y-2">
+              <div className="font-bold flex items-center gap-2 text-zinc-900 text-sm">
+                <Award className="w-4 h-4 text-red-600" />
+                <span>Compromiso de Calidad y Servicio Técnico</span>
               </div>
-              <ul className="list-disc list-inside space-y-0.5 text-amber-950/80 pl-1">
-                <li><strong>Historia y fundación:</strong> Reseña histórica detallada y cantidad exacta de instalaciones realizadas.</li>
-                <li><strong>Días de atención:</strong> Días específicos de la semana (ej. lunes a viernes o sábados).</li>
-                <li><strong>Marcas y convenios oficiales:</strong> Catálogo de marcas de motores que comercializa el local.</li>
-              </ul>
-              <div className="text-[11px] text-amber-700 pt-1">
-                Todos estos datos pueden ser modificados instantáneamente desde el Panel de Administración sin tocar código.
-              </div>
+              <p className="text-zinc-600 leading-relaxed">
+                Realizamos visitas a domicilio para relevamiento técnico, presupuestos a medida de herrería y motores, y servicio postventa en toda la provincia de San Juan.
+              </p>
             </div>
 
             {/* CTAs */}

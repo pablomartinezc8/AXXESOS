@@ -1,7 +1,7 @@
 import React from 'react';
 import { Logo } from './Logo';
-import { CompanyConfig } from '../config/company';
-import { MapPin, Phone, Clock, Instagram, ShieldCheck, ArrowUp } from 'lucide-react';
+import { CompanyConfig, sanitizeWhatsAppNumber, formatWhatsAppDisplay } from '../config/company';
+import { MapPin, Phone, Clock, Instagram, ShieldCheck, ArrowUp, MessageCircle } from 'lucide-react';
 
 interface FooterProps {
   config: CompanyConfig;
@@ -93,7 +93,24 @@ export const Footer: React.FC<FooterProps> = ({ config, onOpenAdmin }) => {
               </div>
               <div className="flex items-start gap-2">
                 <Phone className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                <span className="font-mono">{config.phonePrimary} / {config.phoneSecondary}</span>
+                <div>
+                  {config.phoneMobile && (
+                    <div className="font-mono text-white font-semibold">CEL: {config.phoneMobile}</div>
+                  )}
+                  <div className="font-mono text-zinc-300">TEL: {config.phonePrimary}</div>
+                  <div className="font-mono text-zinc-400 text-[11px]">TEL: {config.phoneSecondary}</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <MessageCircle className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                <a
+                  href={`https://wa.me/${sanitizeWhatsAppNumber(config.whatsappNumber)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-emerald-400 transition-colors font-mono font-medium text-emerald-400"
+                >
+                  WhatsApp: {config.whatsappDisplay || formatWhatsAppDisplay(config.whatsappNumber)}
+                </a>
               </div>
               <div className="flex items-start gap-2">
                 <Clock className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />

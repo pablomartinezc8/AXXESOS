@@ -78,6 +78,24 @@ export default function App() {
     return () => window.removeEventListener('hashchange', checkHash);
   }, []);
 
+  // Sync config across window events
+  useEffect(() => {
+    const handleConfigUpdated = (e: Event) => {
+      const custom = e as CustomEvent<CompanyConfig>;
+      if (custom.detail) {
+        setConfig(custom.detail);
+      } else {
+        setConfig(StorageService.getCompanyConfig());
+      }
+    };
+    window.addEventListener('axxesos_config_updated', handleConfigUpdated);
+    window.addEventListener('storage', handleConfigUpdated);
+    return () => {
+      window.removeEventListener('axxesos_config_updated', handleConfigUpdated);
+      window.removeEventListener('storage', handleConfigUpdated);
+    };
+  }, []);
+
   // Scroll spy to update active navigation item
   useEffect(() => {
     const handleScroll = () => {

@@ -5,7 +5,9 @@ import {
   INITIAL_REAL_PROJECTS, 
   ProductItem, 
   INITIAL_PRODUCTS, 
-  INITIAL_CAROUSEL_SLIDES 
+  INITIAL_CAROUSEL_SLIDES,
+  sanitizeWhatsAppNumber,
+  formatWhatsAppDisplay
 } from '../config/company';
 
 export interface CarouselSlide {
@@ -70,7 +72,41 @@ export const StorageService = {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.CONFIG);
       if (stored) {
-        return { ...INITIAL_COMPANY_CONFIG, ...JSON.parse(stored) };
+        const parsed = JSON.parse(stored);
+        let needsSave = false;
+
+        // Migración automática del número de WhatsApp si tenía el valor viejo previo
+        if (!parsed.whatsappNumber || parsed.whatsappNumber === '5492644062942' || parsed.whatsappDisplay?.includes('A CONFIRMAR')) {
+          parsed.whatsappNumber = INITIAL_COMPANY_CONFIG.whatsappNumber;
+          parsed.whatsappDisplay = INITIAL_COMPANY_CONFIG.whatsappDisplay;
+          needsSave = true;
+        }
+
+        // Migración automática de trayectoria a 28 años (reemplazando 25 aniversario / distintivo previo)
+        if (!parsed.yearsOfExperience || parsed.yearsOfExperience !== 28 || parsed.experienceBadgeText?.includes('25')) {
+          parsed.yearsOfExperience = 28;
+          parsed.experienceBadgeText = INITIAL_COMPANY_CONFIG.experienceBadgeText;
+          needsSave = true;
+        }
+
+        // Migración automática de URLs de logo oficial del PDF
+        if (!parsed.logoUrl || parsed.logoUrl.includes('image_5692190c.png') || !parsed.logoBadgeUrl) {
+          parsed.logoUrl = INITIAL_COMPANY_CONFIG.logoUrl;
+          parsed.logoBadgeUrl = INITIAL_COMPANY_CONFIG.logoBadgeUrl;
+          needsSave = true;
+        }
+
+        // Incorporación de celular directo oficial
+        if (!parsed.phoneMobile) {
+          parsed.phoneMobile = INITIAL_COMPANY_CONFIG.phoneMobile;
+          needsSave = true;
+        }
+
+        const merged = { ...INITIAL_COMPANY_CONFIG, ...parsed };
+        if (needsSave) {
+          this.saveCompanyConfig(merged);
+        }
+        return merged;
       }
     } catch (e) {
       console.warn("Error leyendo configuración de localStorage", e);
@@ -80,7 +116,19 @@ export const StorageService = {
 
   saveCompanyConfig(config: CompanyConfig): void {
     try {
-      localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(config));
+      const cleanNumber = sanitizeWhatsAppNumber(config.whatsappNumber);
+      const cleanDisplay = (!config.whatsappDisplay || config.whatsappDisplay.includes('A CONFIRMAR') || config.whatsappDisplay === config.whatsappNumber)
+        ? formatWhatsAppDisplay(cleanNumber)
+        : config.whatsappDisplay;
+      const updated: CompanyConfig = {
+        ...config,
+        yearsOfExperience: 28,
+        whatsappNumber: cleanNumber,
+        whatsappDisplay: cleanDisplay
+      };
+      localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(updated));
+      // Notificar a toda la ventana para reactividad inmediata sin recargar
+      window.dispatchEvent(new CustomEvent('axxesos_config_updated', { detail: updated }));
     } catch (e) {
       console.error("Error guardando config en localStorage", e);
     }

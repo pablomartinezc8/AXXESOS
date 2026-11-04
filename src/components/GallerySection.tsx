@@ -96,14 +96,13 @@ export const GallerySection: React.FC<GallerySectionProps> = ({
             </p>
           </div>
 
-          {/* Action button for owner */}
+          {/* Customer CTA */}
           <div className="flex items-center gap-3">
             <button
-              onClick={onOpenAdmin}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 text-xs font-semibold text-zinc-700 shadow-sm transition-all cursor-pointer"
+              onClick={() => onOpenQuoteModal()}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-xs font-bold text-white shadow-md transition-all active:scale-95 cursor-pointer uppercase tracking-wider"
             >
-              <PlusCircle className="w-4 h-4 text-red-600" />
-              <span>Administrar Galería (Subir Fotos)</span>
+              <span>Consultar por tu Portón</span>
             </button>
           </div>
         </div>

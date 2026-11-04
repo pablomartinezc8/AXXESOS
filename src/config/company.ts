@@ -21,6 +21,8 @@ export interface CompanyConfig {
   postalCode: string;
   phonePrimary: string;
   phoneSecondary: string;
+  phoneMobile?: string;
+  yearsOfExperience?: number;
   whatsappDisplay: string;
   whatsappNumber: string; // Para enlace wa.me (formato internacional numérico)
   emailDisplay: string;
@@ -84,37 +86,84 @@ export interface ProductItem {
   featured?: boolean;
 }
 
+/**
+ * Sanitiza cualquier formato de teléfono ingresado (ej. "1162575805", "11 6257-5805", "011...", "+54 9 11...")
+ * a formato internacional oficial para la API de WhatsApp (wa.me): "5491162575805".
+ */
+export function sanitizeWhatsAppNumber(rawPhone?: string): string {
+  if (!rawPhone) return "5491162575805";
+  let digits = rawPhone.replace(/\D/g, '');
+  
+  // Si empieza con 549 y tiene longitud completa de celular argentino (13 dígitos)
+  if (digits.startsWith('549') && digits.length >= 12) {
+    return digits;
+  }
+  // Si empieza con 54 seguido de 10 dígitos (falta el 9 móvil de Argentina)
+  if (digits.startsWith('54') && digits.length === 12) {
+    return '549' + digits.slice(2);
+  }
+  // Si empieza con 0 (código interurbano nacional: ej. 011... o 0264...)
+  if (digits.startsWith('0')) {
+    digits = digits.slice(1);
+  }
+  // Si empieza con 15 (prefijo móvil local argentino: ej. 1562575805)
+  if (digits.startsWith('15') && digits.length === 10) {
+    digits = digits.slice(2);
+  }
+  // Si ya es un número de 10 dígitos (ej. 1162575805 o 2644062942), anteponer 549
+  if (!digits.startsWith('54')) {
+    digits = '549' + digits;
+  }
+  return digits;
+}
+
+/**
+ * Devuelve un formato visual prolijo y legible para mostrar al cliente (ej. "+54 9 11 6257-5805")
+ */
+export function formatWhatsAppDisplay(rawPhone?: string): string {
+  const sanitized = sanitizeWhatsAppNumber(rawPhone);
+  if (sanitized.startsWith('54911') && sanitized.length === 13) {
+    return `+54 9 11 ${sanitized.slice(5, 9)}-${sanitized.slice(9)}`;
+  }
+  if (sanitized.startsWith('549264') && sanitized.length === 13) {
+    return `+54 9 264 ${sanitized.slice(6, 9)}-${sanitized.slice(9)}`;
+  }
+  return `+${sanitized}`;
+}
+
 export const INITIAL_COMPANY_CONFIG: CompanyConfig = {
   name: "AXXESOS",
   slogan: "Portones Automáticos y Sistemas de Seguridad",
-  logoUrl: "/assets/aistudio/image_5692190c.png",
-  logoBadgeUrl: "/assets/aistudio/image_5692190c.png",
+  logoUrl: "/axxesos_logo_dark.png",
+  logoBadgeUrl: "/axxesos_badge_round.png",
   address: "Mariano Moreno Este 297",
   city: "San Juan",
   province: "San Juan",
   country: "Argentina",
   postalCode: "J5402",
-  phonePrimary: "0264 406-2942",
-  phoneSecondary: "(0264) 422-5531",
-  whatsappDisplay: "0264 406-2942 (A CONFIRMAR número específico de WhatsApp)",
-  whatsappNumber: "5492644062942", // Por defecto usa el teléfono verificado
-  emailDisplay: "A CONFIRMAR (ej. contacto@axxesos.com.ar)",
+  phonePrimary: "0264 406-2942", // Teléfono fijo en San Juan (solo llamadas)
+  phoneSecondary: "(0264) 422-5531", // Teléfono fijo en San Juan (solo llamadas)
+  phoneMobile: "264-443-3000", // Celular directo oficial (PDF 2024-2025)
+  yearsOfExperience: 28, // 28 años ininterrumpidos en San Juan (desde 1998)
+  whatsappDisplay: "+54 9 11 6257-5805", // WhatsApp exclusivo para mensajes y presupuestos
+  whatsappNumber: "5491162575805", // wa.me/5491162575805
+  emailDisplay: "contacto@axxesos.com.ar",
   emailDestination: "pablomartinezc8@gmail.com",
   instagram: "@axxesos",
   instagramUrl: "https://www.instagram.com/axxesos",
   googleRating: 4.4,
   googleReviewCount: 27,
   workingHoursSchedule: "Mañana hasta 12:30 hs | Tarde reabre 16:30 hs (Corte al mediodía)",
-  workingHoursDaysNotice: "Días de atención exactos: «A CONFIRMAR» (ej. Lunes a Viernes / Sábados mediodía)",
+  workingHoursDaysNotice: "Días de atención: Lunes a Viernes (sábados medio día)",
   googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3400.088921208945!2d-68.52844512351239!3d-31.54920260401826!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9681403e1e075677%3A0x64fa5880486c91a7!2sMariano%20Moreno%20Este%20297%2C%20J5402%20San%20Juan%2C%20Argentina!5e0!3m2!1ses!2sar!4v1709472000000!5m2!1ses!2sar",
-  aboutShort: "Empresa sanjuanina dedicada a la seguridad electrónica y automatización de portones, con atención técnica especializada y soluciones a medida para residencias, comercios e industrias.",
-  aboutFull: "En AXXESOS brindamos soluciones integrales de automatización para todo tipo de portones (corredizos, levadizos y batientes), además de la instalación y configuración de alarmas domiciliarias e industriales y sistemas de cámaras CCTV. Nuestro compromiso es brindar tranquilidad, seguridad y comodidad con equipamiento confiable y respaldo técnico en San Juan.",
-  experienceBadgeText: "Trayectoria comprobada en San Juan (25° Aniversario 1998-2023 según distintivo institucional)",
+  aboutShort: "Empresa sanjuanina con 28 años de trayectoria dedicada a la seguridad electrónica y automatización de portones, con atención técnica especializada y soluciones a medida para residencias, comercios e industrias.",
+  aboutFull: "Con 28 años de trayectoria ininterrumpida en San Juan (desde 1998), en AXXESOS brindamos soluciones integrales de automatización para todo tipo de portones (corredizos, levadizos y batientes), además de la instalación y configuración de alarmas domiciliarias e industriales y sistemas de cámaras CCTV. Nuestro compromiso es brindar tranquilidad, seguridad y comodidad con equipamiento confiable y respaldo técnico en San Juan.",
+  experienceBadgeText: "28 Años de Trayectoria en San Juan (1998 — 2026)",
   statusNotes: {
-    historyStatus: "Historia detallada y años de trayectoria: «A CONFIRMAR» por el dueño",
-    whatsappStatus: "Número exclusivo de WhatsApp: «A CONFIRMAR» (actualmente enrutado al 0264 406-2942)",
-    scheduleDaysStatus: "Días de atención exactos: «A CONFIRMAR»",
-    catalogPricingStatus: "Precios de tienda y marcas comerciales: «A CONFIRMAR» (los mostrados son ejemplos neutros)",
+    historyStatus: "28 años de trayectoria ininterrumpida en San Juan (1998 — 2026)",
+    whatsappStatus: "WhatsApp directo habilitado: +54 9 11 6257-5805 (editable en Admin)",
+    scheduleDaysStatus: "Días de atención: Lunes a Viernes con corte al mediodía",
+    catalogPricingStatus: "Precios de tienda y catálogo: editables desde el Panel de Administración",
   }
 };
 
@@ -442,7 +491,7 @@ export const INITIAL_CAROUSEL_SLIDES = [
     id: "slide-1",
     title: "Automatización de Portones en San Juan",
     subtitle: "Comodidad, rapidez y seguridad para entrar y salir de tu casa sin bajarte del vehículo.",
-    badge: "Especialistas en Portones",
+    badge: "28 Años de Trayectoria",
     imageUrl: "/assets/aistudio/dd7b3dbf-077d-4688-8f70-81155689c7c2_777b42ff.jpg",
     ctaText: "Pedir Presupuesto",
     ctaLink: "#contacto",

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CompanyConfig } from '../config/company';
+import { CompanyConfig, sanitizeWhatsAppNumber } from '../config/company';
 import { StorageService } from '../services/storage';
 import { X, Send, PhoneCall, CheckCircle2, Shield } from 'lucide-react';
 
@@ -58,7 +58,7 @@ export const FastQuoteModal: React.FC<FastQuoteModalProps> = ({
       (notes ? `*Detalles:* ${encodeURIComponent(notes)}%0A` : '') +
       `%0A_Hola, quisiera consultar presupuesto y asesoramiento para este trabajo en San Juan._`;
 
-    const targetPhone = config.whatsappNumber.replace(/[^0-9]/g, '');
+    const targetPhone = sanitizeWhatsAppNumber(config.whatsappNumber);
     const waUrl = `https://wa.me/${targetPhone}?text=${waText}`;
 
     window.open(waUrl, '_blank');
