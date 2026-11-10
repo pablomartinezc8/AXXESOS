@@ -3,6 +3,7 @@ import {
   CompanyConfig, 
   ProjectItem, 
   ProductItem, 
+  CATALOG_CATEGORIES,
   sanitizeWhatsAppNumber, 
   formatWhatsAppDisplay 
 } from '../config/company';
@@ -23,6 +24,7 @@ import {
   Inbox, 
   Download, 
   Trash2, 
+  Pencil,
   Plus, 
   Check, 
   AlertCircle, 
@@ -31,7 +33,8 @@ import {
   RefreshCw, 
   Database,
   ExternalLink,
-  Key
+  Key,
+  Image as ImageIcon
 } from 'lucide-react';
 
 interface AdminModalProps {
@@ -76,6 +79,11 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const [projectToDeleteId, setProjectToDeleteId] = useState<string | null>(null);
   const [slideToDeleteId, setSlideToDeleteId] = useState<string | null>(null);
 
+  // Editing Publication States (allows modifying info, photos, prices)
+  const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
+  const [editingProject, setEditingProject] = useState<ProjectItem | null>(null);
+  const [editingSlide, setEditingSlide] = useState<CarouselSlide | null>(null);
+
   // New Project Form
   const [newProject, setNewProject] = useState<Partial<ProjectItem>>({
     title: '',
@@ -90,16 +98,19 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   // New Product Form
   const [newProduct, setNewProduct] = useState<Partial<ProductItem>>({
     name: '',
-    category: 'corredizos',
-    categoryLabel: 'Motores Corredizos',
+    category: 'automatizadores',
+    subcategory: 'corredizos',
+    categoryLabel: 'Automatizadores',
+    subcategoryLabel: 'Corredizos',
     price: 150000,
     inStock: true,
     stockCountText: 'En stock para entrega inmediata',
     isExample: false,
+    badge: 'Oficial AXXESOS',
     shortDescription: '',
     fullDescription: '',
     specs: { 'Alimentación': '220V', 'Garantía': '12 meses' },
-    imageUrl: '/assets/aistudio/dd7b3dbf-077d-4688-8f70-81155689c7c2_777b42ff.jpg'
+    imageUrl: '/products/axxesos_sliding_motor.jpg'
   });
 
   // New Carousel Slide Form
@@ -196,7 +207,21 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     const updated = projects.filter(p => p.id !== id);
     onSaveProjects(updated);
     setProjectToDeleteId(null);
+    if (editingProject?.id === id) setEditingProject(null);
     showSaveSuccess(`Trabajo "${targetProject?.title || ''}" eliminado.`);
+  };
+
+  const handleUpdateProject = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProject) return;
+    if (!editingProject.title || !editingProject.imageUrl) {
+      showFormError("Por favor ingresá un título y seleccioná una foto para el trabajo.");
+      return;
+    }
+    const updated = projects.map(p => p.id === editingProject.id ? editingProject : p);
+    onSaveProjects(updated);
+    setEditingProject(null);
+    showSaveSuccess(`¡Trabajo "${editingProject.title}" modificado con éxito!`);
   };
 
   // Product Actions
@@ -206,30 +231,21 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       showFormError("Por favor completá nombre y precio del producto.");
       return;
     }
-    const catMap: Record<string, string> = {
-      'automatizadores': 'Automatizadores',
-      'seguridad': 'Seguridad y CCTV',
-      'ruedas': 'Ruedas y Herrajes',
-      'electrocerraduras': 'Electrocerraduras y Cierrapuertas',
-      'estabilizadores': 'Estabilizadores',
-      'corredizos': 'Motores Corredizos',
-      'levadizos': 'Motores Levadizos',
-      'batientes': 'Motores Batientes',
-      'controles': 'Controles y Placas',
-      'repuestos': 'Accesorios y Cremalleras'
-    };
+    const catObj = CATALOG_CATEGORIES.find(c => c.id === newProduct.category);
+    const subObj = catObj?.subcategories.find(s => s.id === newProduct.subcategory);
+
     const created: ProductItem = {
       id: `prod-${Date.now()}`,
       name: newProduct.name,
       category: newProduct.category || 'automatizadores',
       subcategory: newProduct.subcategory || 'corredizos',
-      categoryLabel: catMap[newProduct.category || 'automatizadores'] || 'Automatizadores',
-      subcategoryLabel: catMap[newProduct.subcategory || 'corredizos'] || 'Corredizos',
+      categoryLabel: catObj?.label || 'Automatizadores',
+      subcategoryLabel: subObj?.label || 'Corredizos',
       price: Number(newProduct.price),
       inStock: newProduct.inStock ?? true,
       stockCountText: newProduct.stockCountText || 'En stock',
       isExample: false,
-      badge: 'Producto Oficial',
+      badge: newProduct.badge || 'Producto Oficial',
       shortDescription: newProduct.shortDescription || 'Equipo para automatización o seguridad.',
       fullDescription: newProduct.fullDescription || newProduct.shortDescription || '',
       specs: newProduct.specs || {},
@@ -239,18 +255,44 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     onSaveProducts(updated);
     setNewProduct({
       name: '',
-      category: 'corredizos',
-      categoryLabel: 'Motores Corredizos',
+      category: 'automatizadores',
+      subcategory: 'corredizos',
+      categoryLabel: 'Automatizadores',
+      subcategoryLabel: 'Corredizos',
       price: 150000,
       inStock: true,
       stockCountText: 'En stock para entrega inmediata',
       isExample: false,
+      badge: 'Oficial AXXESOS',
       shortDescription: '',
       fullDescription: '',
       specs: { 'Alimentación': '220V', 'Garantía': '12 meses' },
-      imageUrl: '/assets/aistudio/dd7b3dbf-077d-4688-8f70-81155689c7c2_777b42ff.jpg'
+      imageUrl: '/products/axxesos_sliding_motor.jpg'
     });
     showSaveSuccess("¡Producto agregado a la tienda!");
+  };
+
+  const handleUpdateProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+    if (!editingProduct.name || !editingProduct.price) {
+      showFormError("Por favor completá nombre y precio del producto.");
+      return;
+    }
+    const catObj = CATALOG_CATEGORIES.find(c => c.id === editingProduct.category);
+    const subObj = catObj?.subcategories.find(s => s.id === editingProduct.subcategory);
+
+    const updatedItem: ProductItem = {
+      ...editingProduct,
+      categoryLabel: catObj?.label || editingProduct.categoryLabel,
+      subcategoryLabel: subObj?.label || editingProduct.subcategoryLabel,
+      price: Number(editingProduct.price),
+      isExample: false // Al ser editado en admin, ya no figura como ejemplo a confirmar
+    };
+    const updated = products.map(p => p.id === updatedItem.id ? updatedItem : p);
+    onSaveProducts(updated);
+    setEditingProduct(null);
+    showSaveSuccess(`¡Publicación "${updatedItem.name}" actualizada con éxito!`);
   };
 
   const confirmDeleteProduct = (id: string) => {
@@ -258,7 +300,21 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     const updated = products.filter(p => p.id !== id);
     onSaveProducts(updated);
     setProductToDeleteId(null);
+    if (editingProduct?.id === id) setEditingProduct(null);
     showSaveSuccess(`Producto "${targetProduct?.name || ''}" eliminado del catálogo.`);
+  };
+
+  const handleUpdateSlide = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSlide) return;
+    if (!editingSlide.title || !editingSlide.imageUrl) {
+      showFormError("Por favor ingresá un título y foto para la diapositiva.");
+      return;
+    }
+    const updated = carouselSlides.map(s => s.id === editingSlide.id ? editingSlide : s);
+    onSaveCarouselSlides(updated);
+    setEditingSlide(null);
+    showSaveSuccess(`¡Diapositiva "${editingSlide.title}" modificada con éxito!`);
   };
 
   // Carousel Slide Actions
@@ -551,7 +607,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
             </div>
 
             {/* Main Tab Panel Area */}
-            <div className="flex-1 p-6 overflow-y-auto space-y-6">
+            <div id="admin-modal-scroll-area" className="flex-1 p-6 overflow-y-auto space-y-6">
 
               {/* TAB 1: TRABAJOS REALIZADOS (GALERÍA) */}
               {activeTab === 'projects' && (
@@ -559,131 +615,274 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                   <div>
                     <h3 className="text-lg font-black">Galería de Trabajos Realizados</h3>
                     <p className="text-xs text-zinc-400">
-                      Subí fotos nuevas tomadas desde tu celular de portones levadizos, corredizos o cámaras en San Juan.
+                      Subí fotos nuevas o modificá publicaciones existentes tomadas de portones levadizos, corredizos o cámaras en San Juan.
                     </p>
                   </div>
 
-                  {/* Add New Work Form */}
-                  <form onSubmit={handleAddProject} className="bg-zinc-950 p-5 rounded-xl border border-zinc-800 space-y-4">
-                    <div className="text-xs font-bold text-red-500 uppercase tracking-wider flex items-center gap-1.5">
-                      <Plus className="w-4 h-4" />
-                      <span>Cargar Nuevo Trabajo a la Galería</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-300 mb-1">Título del Trabajo *</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="Ej. Portón corredizo con motor rápido"
-                          value={newProject.title}
-                          onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
-                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-300 mb-1">Categoría</label>
-                        <select
-                          value={newProject.category}
-                          onChange={(e) => setNewProject({ ...newProject, category: e.target.value as any })}
-                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
-                        >
-                          <option value="levadizos">Portones Levadizos</option>
-                          <option value="corredizos">Portones Corredizos</option>
-                          <option value="batientes">Portones Batientes</option>
-                          <option value="cctv_alarmas">CCTV y Alarmas</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-300 mb-1">Localidad / Zona en San Juan</label>
-                        <input
-                          type="text"
-                          placeholder="Ej. Rivadavia, Santa Lucía, Rawson, Capital"
-                          value={newProject.location}
-                          onChange={(e) => setNewProject({ ...newProject, location: e.target.value })}
-                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-300 mb-1">Tipo de Servicio Realizado</label>
-                        <input
-                          type="text"
-                          placeholder="Ej. Instalación de equipo corredizo 1/3 HP"
-                          value={newProject.serviceType}
-                          onChange={(e) => setNewProject({ ...newProject, serviceType: e.target.value })}
-                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Image Upload or URL */}
-                    <div className="space-y-2">
-                      <label className="block text-xs font-medium text-zinc-300">Foto del Trabajo *</label>
-                      <div className="flex flex-col sm:flex-row gap-3 items-center">
-                        <label className="cursor-pointer bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 border border-zinc-700 shrink-0">
-                          <Upload className="w-4 h-4 text-red-500" />
-                          <span>Subir desde mi dispositivo</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              if (e.target.files && e.target.files[0]) {
-                                handleImageUpload(e.target.files[0], (url) => {
-                                  setNewProject({ ...newProject, imageUrl: url });
-                                });
-                              }
-                            }}
-                          />
-                        </label>
-
-                        <span className="text-zinc-500 text-xs">o ingresá la URL directa:</span>
-                        
-                        <input
-                          type="text"
-                          placeholder="https://... o /assets/..."
-                          value={newProject.imageUrl}
-                          onChange={(e) => setNewProject({ ...newProject, imageUrl: e.target.value })}
-                          className="flex-1 px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
-                        />
-                      </div>
-
-                      {newProject.imageUrl && (
-                        <div className="pt-2 flex items-center gap-3">
-                          <img
-                            src={newProject.imageUrl}
-                            alt="Previsualización"
-                            className="w-20 h-16 object-cover rounded-lg border border-zinc-700"
-                          />
-                          <span className="text-xs text-emerald-400">✓ Foto lista para publicar</span>
+                  {/* Edit Work Form (when editingProject is selected) */}
+                  {editingProject ? (
+                    <form onSubmit={handleUpdateProject} className="bg-zinc-950 p-5 rounded-2xl border-2 border-amber-500/80 shadow-2xl space-y-4 animate-in fade-in duration-150">
+                      <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400">
+                            <Pencil className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-black text-white">Editar Publicación de Trabajo</h4>
+                            <span className="text-[11px] text-amber-400/90 font-medium">Modificando: {editingProject.title}</span>
+                          </div>
                         </div>
-                      )}
-                    </div>
+                        <button
+                          type="button"
+                          onClick={() => setEditingProject(null)}
+                          className="px-3 py-1 rounded-lg text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition-colors cursor-pointer"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
 
-                    <div>
-                      <label className="block text-xs font-medium text-zinc-300 mb-1">Descripción Breve</label>
-                      <textarea
-                        rows={2}
-                        placeholder="Explicá brevemente qué se instaló..."
-                        value={newProject.description}
-                        onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                        className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
-                      />
-                    </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Título del Trabajo *</label>
+                          <input
+                            type="text"
+                            required
+                            value={editingProject.title}
+                            onChange={(e) => setEditingProject({ ...editingProject, title: e.target.value })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white focus:border-amber-500 outline-none"
+                          />
+                        </div>
 
-                    <button
-                      type="submit"
-                      className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
-                    >
-                      Publicar Trabajo en la Galería
-                    </button>
-                  </form>
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Categoría</label>
+                          <select
+                            value={editingProject.category}
+                            onChange={(e) => setEditingProject({ ...editingProject, category: e.target.value as any })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white focus:border-amber-500 outline-none"
+                          >
+                            <option value="levadizos">Portones Levadizos</option>
+                            <option value="corredizos">Portones Corredizos</option>
+                            <option value="batientes">Portones Batientes</option>
+                            <option value="cctv_alarmas">CCTV y Alarmas</option>
+                            <option value="mantenimiento">Mantenimiento y Reparación</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Localidad / Zona en San Juan</label>
+                          <input
+                            type="text"
+                            value={editingProject.location}
+                            onChange={(e) => setEditingProject({ ...editingProject, location: e.target.value })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white focus:border-amber-500 outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Tipo de Servicio Realizado</label>
+                          <input
+                            type="text"
+                            value={editingProject.serviceType}
+                            onChange={(e) => setEditingProject({ ...editingProject, serviceType: e.target.value })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white focus:border-amber-500 outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Photo editing with preview */}
+                      <div className="space-y-2 bg-zinc-900/60 p-3.5 rounded-xl border border-zinc-800">
+                        <label className="block text-xs font-bold text-zinc-200">Foto del Trabajo</label>
+                        <div className="flex flex-col sm:flex-row gap-4 items-center">
+                          {editingProject.imageUrl && (
+                            <img
+                              src={editingProject.imageUrl}
+                              alt="Vista previa"
+                              className="w-24 h-16 object-cover rounded-lg border border-zinc-700 shadow shrink-0"
+                            />
+                          )}
+                          <div className="flex-1 w-full space-y-2">
+                            <label className="cursor-pointer bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow">
+                              <Upload className="w-4 h-4" />
+                              <span>Cambiar foto desde mi celular / PC</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  if (e.target.files && e.target.files[0]) {
+                                    handleImageUpload(e.target.files[0], (url) => {
+                                      setEditingProject({ ...editingProject, imageUrl: url });
+                                    });
+                                  }
+                                }}
+                              />
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[11px] text-zinc-400 shrink-0">o URL directa:</span>
+                              <input
+                                type="text"
+                                value={editingProject.imageUrl}
+                                onChange={(e) => setEditingProject({ ...editingProject, imageUrl: e.target.value })}
+                                className="w-full px-3 py-1.5 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-zinc-300 mb-1">Descripción del Trabajo</label>
+                        <textarea
+                          rows={2}
+                          value={editingProject.description}
+                          onChange={(e) => setEditingProject({ ...editingProject, description: e.target.value })}
+                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white focus:border-amber-500 outline-none"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-3 pt-2">
+                        <button
+                          type="submit"
+                          className="bg-amber-500 hover:bg-amber-600 text-zinc-950 px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-2 shadow"
+                        >
+                          <Save className="w-4 h-4" />
+                          <span>Guardar Cambios del Trabajo</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingProject(null)}
+                          className="px-4 py-2.5 rounded-lg text-xs font-bold text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 transition-colors cursor-pointer"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    /* Add New Work Form */
+                    <form onSubmit={handleAddProject} className="bg-zinc-950 p-5 rounded-xl border border-zinc-800 space-y-4">
+                      <div className="text-xs font-bold text-red-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Plus className="w-4 h-4" />
+                        <span>Cargar Nuevo Trabajo a la Galería</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Título del Trabajo *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Ej. Portón corredizo con motor rápido"
+                            value={newProject.title}
+                            onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Categoría</label>
+                          <select
+                            value={newProject.category}
+                            onChange={(e) => setNewProject({ ...newProject, category: e.target.value as any })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                          >
+                            <option value="levadizos">Portones Levadizos</option>
+                            <option value="corredizos">Portones Corredizos</option>
+                            <option value="batientes">Portones Batientes</option>
+                            <option value="cctv_alarmas">CCTV y Alarmas</option>
+                            <option value="mantenimiento">Mantenimiento y Reparación</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Localidad / Zona en San Juan</label>
+                          <input
+                            type="text"
+                            placeholder="Ej. Rivadavia, Santa Lucía, Rawson, Capital"
+                            value={newProject.location}
+                            onChange={(e) => setNewProject({ ...newProject, location: e.target.value })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Tipo de Servicio Realizado</label>
+                          <input
+                            type="text"
+                            placeholder="Ej. Instalación de equipo corredizo 1/3 HP"
+                            value={newProject.serviceType}
+                            onChange={(e) => setNewProject({ ...newProject, serviceType: e.target.value })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Image Upload or URL */}
+                      <div className="space-y-2">
+                        <label className="block text-xs font-medium text-zinc-300">Foto del Trabajo *</label>
+                        <div className="flex flex-col sm:flex-row gap-3 items-center">
+                          <label className="cursor-pointer bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 border border-zinc-700 shrink-0">
+                            <Upload className="w-4 h-4 text-red-500" />
+                            <span>Subir desde mi dispositivo</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                  handleImageUpload(e.target.files[0], (url) => {
+                                    setNewProject({ ...newProject, imageUrl: url });
+                                  });
+                                }
+                              }}
+                            />
+                          </label>
+
+                          <span className="text-zinc-500 text-xs">o ingresá la URL directa:</span>
+                          
+                          <input
+                            type="text"
+                            placeholder="https://... o /assets/..."
+                            value={newProject.imageUrl}
+                            onChange={(e) => setNewProject({ ...newProject, imageUrl: e.target.value })}
+                            className="flex-1 px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                          />
+                        </div>
+
+                        {newProject.imageUrl && (
+                          <div className="pt-2 flex items-center gap-3">
+                            <img
+                              src={newProject.imageUrl}
+                              alt="Previsualización"
+                              className="w-20 h-16 object-cover rounded-lg border border-zinc-700"
+                            />
+                            <span className="text-xs text-emerald-400">✓ Foto lista para publicar</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-zinc-300 mb-1">Descripción Breve</label>
+                        <textarea
+                          rows={2}
+                          placeholder="Explicá brevemente qué se instaló..."
+                          value={newProject.description}
+                          onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                      >
+                        Publicar Trabajo en la Galería
+                      </button>
+                    </form>
+                  )}
 
                   {/* Existing Projects List */}
                   <div className="space-y-3">
@@ -703,7 +902,19 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                             <div className="text-red-400 text-[11px]">{proj.serviceType}</div>
                             <div className="text-zinc-500 text-[10px]">{proj.location}</div>
                           </div>
-                          <div className="flex items-center shrink-0">
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingProject({ ...proj });
+                                const panel = document.getElementById('admin-modal-scroll-area');
+                                if (panel) panel.scrollTo({ top: 0, behavior: 'smooth' });
+                              }}
+                              className="p-2 text-zinc-400 hover:text-amber-400 hover:bg-amber-950/40 rounded-lg transition-colors cursor-pointer"
+                              title="Modificar trabajo (datos o foto)"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
                             {projectToDeleteId === proj.id ? (
                               <div className="flex items-center gap-1.5 bg-red-950/90 border border-red-600/80 p-1.5 rounded-lg animate-in fade-in">
                                 <span className="text-[10px] text-red-200 font-bold whitespace-nowrap">¿Borrar?</span>
@@ -750,127 +961,400 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                     </p>
                   </div>
 
-                  {/* Add Product Form */}
-                  <form onSubmit={handleAddProduct} className="bg-zinc-950 p-5 rounded-xl border border-zinc-800 space-y-4">
-                    <div className="text-xs font-bold text-red-500 uppercase tracking-wider flex items-center gap-1.5">
-                      <Plus className="w-4 h-4" />
-                      <span>Cargar Nuevo Producto</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div className="sm:col-span-2">
-                        <label className="block text-xs font-medium text-zinc-300 mb-1">Nombre del Producto / Modelo *</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="Ej. Motor Corredizo 1/3 HP con Cremallera"
-                          value={newProduct.name}
-                          onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-300 mb-1">Precio en ARS ($) *</label>
-                        <input
-                          type="number"
-                          required
-                          placeholder="180000"
-                          value={newProduct.price}
-                          onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
-                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-300 mb-1">Categoría</label>
-                        <select
-                          value={newProduct.category}
-                          onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value as any })}
-                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                  {/* Edit Product Form (when editingProduct is selected) */}
+                  {editingProduct ? (
+                    <form onSubmit={handleUpdateProduct} className="bg-zinc-950 p-6 rounded-2xl border-2 border-amber-500/80 shadow-2xl space-y-4 animate-in fade-in duration-150">
+                      <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400">
+                            <Pencil className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-black text-white">Editar Publicación de Producto</h4>
+                            <span className="text-[11px] text-amber-400/90 font-medium">Modificando: {editingProduct.name}</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setEditingProduct(null)}
+                          className="px-3 py-1 rounded-lg text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition-colors cursor-pointer"
                         >
-                          <option value="corredizos">Motores Corredizos</option>
-                          <option value="levadizos">Motores Levadizos</option>
-                          <option value="batientes">Motores Batientes</option>
-                          <option value="controles">Controles y Placas</option>
-                          <option value="seguridad">CCTV y Alarmas</option>
-                          <option value="repuestos">Accesorios y Cremalleras</option>
-                        </select>
+                          Cancelar
+                        </button>
                       </div>
 
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-300 mb-1">Estado de Stock</label>
-                        <select
-                          value={newProduct.inStock ? 'true' : 'false'}
-                          onChange={(e) => setNewProduct({ ...newProduct, inStock: e.target.value === 'true' })}
-                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
-                        >
-                          <option value="true">En Stock (Disponible)</option>
-                          <option value="false">A Pedido / Consultar</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-300 mb-1">Texto de Stock</label>
-                        <input
-                          type="text"
-                          placeholder="Ej. Disponible en local Mariano Moreno E. 297"
-                          value={newProduct.stockCountText}
-                          onChange={(e) => setNewProduct({ ...newProduct, stockCountText: e.target.value })}
-                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="block text-xs font-medium text-zinc-300">Foto del Producto</label>
-                      <div className="flex flex-col sm:flex-row gap-3 items-center">
-                        <label className="cursor-pointer bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 border border-zinc-700 shrink-0">
-                          <Upload className="w-4 h-4 text-red-500" />
-                          <span>Subir foto</span>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="sm:col-span-2">
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Nombre del Producto / Modelo *</label>
                           <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              if (e.target.files && e.target.files[0]) {
-                                handleImageUpload(e.target.files[0], (url) => {
-                                  setNewProduct({ ...newProduct, imageUrl: url });
-                                });
-                              }
-                            }}
+                            type="text"
+                            required
+                            value={editingProduct.name}
+                            onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white focus:border-amber-500 outline-none"
                           />
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="o URL de imagen..."
-                          value={newProduct.imageUrl}
-                          onChange={(e) => setNewProduct({ ...newProduct, imageUrl: e.target.value })}
-                          className="flex-1 px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Precio en ARS ($) *</label>
+                          <input
+                            type="number"
+                            required
+                            value={editingProduct.price}
+                            onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white font-mono focus:border-amber-500 outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Category & Subcategory Dynamic Selectors */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Categoría</label>
+                          <select
+                            value={editingProduct.category}
+                            onChange={(e) => {
+                              const catId = e.target.value;
+                              const catObj = CATALOG_CATEGORIES.find(c => c.id === catId);
+                              const firstSub = catObj?.subcategories[0];
+                              setEditingProduct({
+                                ...editingProduct,
+                                category: catId,
+                                categoryLabel: catObj?.label || catId,
+                                subcategory: firstSub?.id || '',
+                                subcategoryLabel: firstSub?.label || ''
+                              });
+                            }}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white focus:border-amber-500 outline-none"
+                          >
+                            {CATALOG_CATEGORIES.map((cat) => (
+                              <option key={cat.id} value={cat.id}>{cat.label}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Subcategoría</label>
+                          <select
+                            value={editingProduct.subcategory}
+                            onChange={(e) => {
+                              const subId = e.target.value;
+                              const catObj = CATALOG_CATEGORIES.find(c => c.id === editingProduct.category);
+                              const subObj = catObj?.subcategories.find(s => s.id === subId);
+                              setEditingProduct({
+                                ...editingProduct,
+                                subcategory: subId,
+                                subcategoryLabel: subObj?.label || subId
+                              });
+                            }}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white focus:border-amber-500 outline-none"
+                          >
+                            {CATALOG_CATEGORIES.find(c => c.id === editingProduct.category)?.subcategories.map((sub) => (
+                              <option key={sub.id} value={sub.id}>{sub.label}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Distintivo / Badge</label>
+                          <input
+                            type="text"
+                            placeholder="Ej. Apertura Rápida, WiFi, En Stock..."
+                            value={editingProduct.badge || ''}
+                            onChange={(e) => setEditingProduct({ ...editingProduct, badge: e.target.value })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white focus:border-amber-500 outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Stock state & text */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Disponibilidad</label>
+                          <select
+                            value={editingProduct.inStock ? 'true' : 'false'}
+                            onChange={(e) => setEditingProduct({ ...editingProduct, inStock: e.target.value === 'true' })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white focus:border-amber-500 outline-none"
+                          >
+                            <option value="true">En Stock (Inmediato)</option>
+                            <option value="false">A Pedido / Consultar</option>
+                          </select>
+                        </div>
+
+                        <div className="sm:col-span-2">
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Texto de Stock Visible</label>
+                          <input
+                            type="text"
+                            placeholder="Ej. En stock en Mariano Moreno 297"
+                            value={editingProduct.stockCountText || ''}
+                            onChange={(e) => setEditingProduct({ ...editingProduct, stockCountText: e.target.value })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white focus:border-amber-500 outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Photo editing with preview and upload */}
+                      <div className="space-y-2 bg-zinc-900/60 p-3.5 rounded-xl border border-zinc-800">
+                        <label className="block text-xs font-bold text-zinc-200">Foto del Producto</label>
+                        <div className="flex flex-col sm:flex-row gap-4 items-center">
+                          {editingProduct.imageUrl && (
+                            <div className="relative group shrink-0">
+                              <img
+                                src={editingProduct.imageUrl}
+                                alt="Vista previa del producto"
+                                className="w-20 h-20 object-contain rounded-xl bg-zinc-950 p-1.5 border border-zinc-700 shadow-md"
+                              />
+                              <span className="absolute bottom-1 right-1 text-[9px] bg-black/80 text-zinc-300 px-1 rounded">Foto actual</span>
+                            </div>
+                          )}
+                          <div className="flex-1 w-full space-y-2">
+                            <label className="cursor-pointer bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow">
+                              <Upload className="w-4 h-4" />
+                              <span>Cambiar foto desde mi celular / PC</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  if (e.target.files && e.target.files[0]) {
+                                    handleImageUpload(e.target.files[0], (url) => {
+                                      setEditingProduct({ ...editingProduct, imageUrl: url });
+                                    });
+                                  }
+                                }}
+                              />
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[11px] text-zinc-400 shrink-0">o pegar URL:</span>
+                              <input
+                                type="text"
+                                placeholder="https://... o /products/..."
+                                value={editingProduct.imageUrl}
+                                onChange={(e) => setEditingProduct({ ...editingProduct, imageUrl: e.target.value })}
+                                className="w-full px-3 py-1.5 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Descriptions */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Descripción Breve (Tarjeta)</label>
+                          <textarea
+                            rows={2}
+                            value={editingProduct.shortDescription || ''}
+                            onChange={(e) => setEditingProduct({ ...editingProduct, shortDescription: e.target.value })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white focus:border-amber-500 outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Descripción Completa (Ficha Técnica)</label>
+                          <textarea
+                            rows={2}
+                            value={editingProduct.fullDescription || ''}
+                            onChange={(e) => setEditingProduct({ ...editingProduct, fullDescription: e.target.value })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white focus:border-amber-500 outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 pt-2">
+                        <button
+                          type="submit"
+                          className="bg-amber-500 hover:bg-amber-600 text-zinc-950 px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-2 shadow-lg shadow-amber-950/40"
+                        >
+                          <Save className="w-4 h-4" />
+                          <span>Guardar Cambios de la Publicación</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingProduct(null)}
+                          className="px-4 py-2.5 rounded-lg text-xs font-bold text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 transition-colors cursor-pointer"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    /* Add Product Form */
+                    <form onSubmit={handleAddProduct} className="bg-zinc-950 p-5 rounded-xl border border-zinc-800 space-y-4">
+                      <div className="text-xs font-bold text-red-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Plus className="w-4 h-4" />
+                        <span>Cargar Nuevo Producto</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="sm:col-span-2">
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Nombre del Producto / Modelo *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Ej. Motor Corredizo 1/3 HP con Cremallera"
+                            value={newProduct.name}
+                            onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Precio en ARS ($) *</label>
+                          <input
+                            type="number"
+                            required
+                            placeholder="180000"
+                            value={newProduct.price}
+                            onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Categoría</label>
+                          <select
+                            value={newProduct.category}
+                            onChange={(e) => {
+                              const catId = e.target.value;
+                              const catObj = CATALOG_CATEGORIES.find(c => c.id === catId);
+                              const firstSub = catObj?.subcategories[0];
+                              setNewProduct({
+                                ...newProduct,
+                                category: catId,
+                                categoryLabel: catObj?.label || catId,
+                                subcategory: firstSub?.id || '',
+                                subcategoryLabel: firstSub?.label || ''
+                              });
+                            }}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                          >
+                            {CATALOG_CATEGORIES.map((cat) => (
+                              <option key={cat.id} value={cat.id}>{cat.label}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Subcategoría</label>
+                          <select
+                            value={newProduct.subcategory}
+                            onChange={(e) => {
+                              const subId = e.target.value;
+                              const catObj = CATALOG_CATEGORIES.find(c => c.id === newProduct.category);
+                              const subObj = catObj?.subcategories.find(s => s.id === subId);
+                              setNewProduct({
+                                ...newProduct,
+                                subcategory: subId,
+                                subcategoryLabel: subObj?.label || subId
+                              });
+                            }}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                          >
+                            {CATALOG_CATEGORIES.find(c => c.id === newProduct.category)?.subcategories.map((sub) => (
+                              <option key={sub.id} value={sub.id}>{sub.label}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Estado de Stock</label>
+                          <select
+                            value={newProduct.inStock ? 'true' : 'false'}
+                            onChange={(e) => setNewProduct({ ...newProduct, inStock: e.target.value === 'true' })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                          >
+                            <option value="true">En Stock (Disponible)</option>
+                            <option value="false">A Pedido / Consultar</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="sm:col-span-2">
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Texto de Stock</label>
+                          <input
+                            type="text"
+                            placeholder="Ej. Disponible en local Mariano Moreno E. 297"
+                            value={newProduct.stockCountText}
+                            onChange={(e) => setNewProduct({ ...newProduct, stockCountText: e.target.value })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Distintivo / Badge</label>
+                          <input
+                            type="text"
+                            placeholder="Ej. Nuevo, Rápido, WiFi..."
+                            value={newProduct.badge || ''}
+                            onChange={(e) => setNewProduct({ ...newProduct, badge: e.target.value })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block text-xs font-medium text-zinc-300">Foto del Producto</label>
+                        <div className="flex flex-col sm:flex-row gap-3 items-center">
+                          <label className="cursor-pointer bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 border border-zinc-700 shrink-0">
+                            <Upload className="w-4 h-4 text-red-500" />
+                            <span>Subir foto desde dispositivo</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                  handleImageUpload(e.target.files[0], (url) => {
+                                    setNewProduct({ ...newProduct, imageUrl: url });
+                                  });
+                                }
+                              }}
+                            />
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="o URL de imagen..."
+                            value={newProduct.imageUrl}
+                            onChange={(e) => setNewProduct({ ...newProduct, imageUrl: e.target.value })}
+                            className="flex-1 px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                          />
+                        </div>
+
+                        {newProduct.imageUrl && (
+                          <div className="pt-1 flex items-center gap-3">
+                            <img
+                              src={newProduct.imageUrl}
+                              alt="Vista previa"
+                              className="w-16 h-16 object-contain rounded-lg bg-zinc-900 p-1 border border-zinc-700"
+                            />
+                            <span className="text-xs text-emerald-400">✓ Imagen cargada</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-zinc-300 mb-1">Descripción y detalles</label>
+                        <textarea
+                          rows={2}
+                          placeholder="Detalles técnicos, peso que soporta, controles que incluye..."
+                          value={newProduct.shortDescription}
+                          onChange={(e) => setNewProduct({ ...newProduct, shortDescription: e.target.value })}
+                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
                         />
                       </div>
-                    </div>
 
-                    <div>
-                      <label className="block text-xs font-medium text-zinc-300 mb-1">Descripción y detalles</label>
-                      <textarea
-                        rows={2}
-                        placeholder="Detalles técnicos, peso que soporta, controles que incluye..."
-                        value={newProduct.shortDescription}
-                        onChange={(e) => setNewProduct({ ...newProduct, shortDescription: e.target.value })}
-                        className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
-                    >
-                      Agregar Producto al Catálogo
-                    </button>
-                  </form>
+                      <button
+                        type="submit"
+                        className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                      >
+                        Agregar Producto al Catálogo
+                      </button>
+                    </form>
+                  )}
 
                   {/* Existing Products List */}
                   <div className="space-y-3">
@@ -879,7 +1363,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {products.map((prod) => (
-                        <div key={prod.id} className="p-3 bg-zinc-950 rounded-xl border border-zinc-800 flex gap-3 items-center justify-between">
+                        <div key={prod.id} className="p-3 bg-zinc-950 rounded-xl border border-zinc-800 flex gap-3 items-center justify-between hover:border-zinc-700 transition-colors">
                           <img
                             src={prod.imageUrl}
                             alt={prod.name}
@@ -892,7 +1376,19 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                               {prod.categoryLabel} • {prod.isExample ? '«Ejemplo - A CONFIRMAR»' : 'Oficial'}
                             </div>
                           </div>
-                          <div className="flex items-center shrink-0">
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingProduct({ ...prod });
+                                const panel = document.getElementById('admin-modal-scroll-area');
+                                if (panel) panel.scrollTo({ top: 0, behavior: 'smooth' });
+                              }}
+                              className="p-2 text-zinc-400 hover:text-amber-400 hover:bg-amber-950/40 rounded-lg transition-colors cursor-pointer"
+                              title="Modificar publicación (información, foto o precio)"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
                             {productToDeleteId === prod.id ? (
                               <div className="flex items-center gap-1.5 bg-red-950/90 border border-red-600/80 p-1.5 rounded-lg animate-in fade-in">
                                 <span className="text-[10px] text-red-200 font-bold whitespace-nowrap">¿Borrar?</span>
@@ -939,92 +1435,207 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                     </p>
                   </div>
 
-                  {/* Add Slide */}
-                  <form onSubmit={handleAddSlide} className="bg-zinc-950 p-5 rounded-xl border border-zinc-800 space-y-4">
-                    <div className="text-xs font-bold text-red-500 uppercase tracking-wider flex items-center gap-1.5">
-                      <Plus className="w-4 h-4" />
-                      <span>Agregar Foto al Carrusel</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-300 mb-1">Título de la Diapositiva *</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="Ej. Portones Levadizos San Juan"
-                          value={newSlide.title}
-                          onChange={(e) => setNewSlide({ ...newSlide, title: e.target.value })}
-                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
-                        />
+                  {/* Edit Slide Form (when editingSlide is selected) */}
+                  {editingSlide ? (
+                    <form onSubmit={handleUpdateSlide} className="bg-zinc-950 p-6 rounded-2xl border-2 border-amber-500/80 shadow-2xl space-y-4 animate-in fade-in duration-150">
+                      <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400">
+                            <Pencil className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-black text-white">Editar Diapositiva del Carrusel</h4>
+                            <span className="text-[11px] text-amber-400/90 font-medium">Modificando: {editingSlide.title}</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setEditingSlide(null)}
+                          className="px-3 py-1 rounded-lg text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition-colors cursor-pointer"
+                        >
+                          Cancelar
+                        </button>
                       </div>
 
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-300 mb-1">Etiqueta Superior</label>
-                        <input
-                          type="text"
-                          placeholder="Ej. Especialistas en Automatismos"
-                          value={newSlide.badge}
-                          onChange={(e) => setNewSlide({ ...newSlide, badge: e.target.value })}
-                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-zinc-300 mb-1">Subtítulo Descriptivo</label>
-                      <input
-                        type="text"
-                        placeholder="Ej. Motores rápidos, controles anticopia y servicio técnico oficial."
-                        value={newSlide.subtitle}
-                        onChange={(e) => setNewSlide({ ...newSlide, subtitle: e.target.value })}
-                        className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="block text-xs font-medium text-zinc-300">Foto de Fondo (Pantalla Completa) *</label>
-                      <div className="flex flex-col sm:flex-row gap-3 items-center">
-                        <label className="cursor-pointer bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 border border-zinc-700 shrink-0">
-                          <Upload className="w-4 h-4 text-red-500" />
-                          <span>Subir imagen</span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Título de la Diapositiva *</label>
                           <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              if (e.target.files && e.target.files[0]) {
-                                handleImageUpload(e.target.files[0], (url) => {
-                                  setNewSlide({ ...newSlide, imageUrl: url });
-                                });
-                              }
-                            }}
+                            type="text"
+                            required
+                            value={editingSlide.title}
+                            onChange={(e) => setEditingSlide({ ...editingSlide, title: e.target.value })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white focus:border-amber-500 outline-none"
                           />
-                        </label>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Etiqueta Superior (Badge)</label>
+                          <input
+                            type="text"
+                            value={editingSlide.badge}
+                            onChange={(e) => setEditingSlide({ ...editingSlide, badge: e.target.value })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white focus:border-amber-500 outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-zinc-300 mb-1">Subtítulo Descriptivo</label>
                         <input
                           type="text"
-                          placeholder="o URL directa de la foto..."
-                          value={newSlide.imageUrl}
-                          onChange={(e) => setNewSlide({ ...newSlide, imageUrl: e.target.value })}
-                          className="flex-1 px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                          value={editingSlide.subtitle}
+                          onChange={(e) => setEditingSlide({ ...editingSlide, subtitle: e.target.value })}
+                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white focus:border-amber-500 outline-none"
                         />
                       </div>
-                      {newSlide.imageUrl && (
-                        <img
-                          src={newSlide.imageUrl}
-                          alt="Preview slide"
-                          className="h-24 w-full object-cover rounded-lg border border-zinc-800 mt-2"
-                        />
-                      )}
-                    </div>
 
-                    <button
-                      type="submit"
-                      className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
-                    >
-                      Guardar Diapositiva
-                    </button>
-                  </form>
+                      {/* Photo editing with preview and upload */}
+                      <div className="space-y-2 bg-zinc-900/60 p-3.5 rounded-xl border border-zinc-800">
+                        <label className="block text-xs font-bold text-zinc-200">Foto de Fondo (Pantalla Completa) *</label>
+                        <div className="flex flex-col sm:flex-row gap-4 items-center">
+                          {editingSlide.imageUrl && (
+                            <img
+                              src={editingSlide.imageUrl}
+                              alt="Vista previa"
+                              className="w-32 h-20 object-cover rounded-lg border border-zinc-700 shadow shrink-0"
+                            />
+                          )}
+                          <div className="flex-1 w-full space-y-2">
+                            <label className="cursor-pointer bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow">
+                              <Upload className="w-4 h-4" />
+                              <span>Cambiar foto desde mi celular / PC</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  if (e.target.files && e.target.files[0]) {
+                                    handleImageUpload(e.target.files[0], (url) => {
+                                      setEditingSlide({ ...editingSlide, imageUrl: url });
+                                    });
+                                  }
+                                }}
+                              />
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[11px] text-zinc-400 shrink-0">o URL directa:</span>
+                              <input
+                                type="text"
+                                value={editingSlide.imageUrl}
+                                onChange={(e) => setEditingSlide({ ...editingSlide, imageUrl: e.target.value })}
+                                className="w-full px-3 py-1.5 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 pt-2">
+                        <button
+                          type="submit"
+                          className="bg-amber-500 hover:bg-amber-600 text-zinc-950 px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-2 shadow"
+                        >
+                          <Save className="w-4 h-4" />
+                          <span>Guardar Cambios de la Diapositiva</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingSlide(null)}
+                          className="px-4 py-2.5 rounded-lg text-xs font-bold text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 transition-colors cursor-pointer"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    /* Add Slide Form */
+                    <form onSubmit={handleAddSlide} className="bg-zinc-950 p-5 rounded-xl border border-zinc-800 space-y-4">
+                      <div className="text-xs font-bold text-red-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Plus className="w-4 h-4" />
+                        <span>Agregar Foto al Carrusel</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Título de la Diapositiva *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Ej. Portones Levadizos San Juan"
+                            value={newSlide.title}
+                            onChange={(e) => setNewSlide({ ...newSlide, title: e.target.value })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-300 mb-1">Etiqueta Superior</label>
+                          <input
+                            type="text"
+                            placeholder="Ej. Especialistas en Automatismos"
+                            value={newSlide.badge}
+                            onChange={(e) => setNewSlide({ ...newSlide, badge: e.target.value })}
+                            className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-zinc-300 mb-1">Subtítulo Descriptivo</label>
+                        <input
+                          type="text"
+                          placeholder="Ej. Motores rápidos, controles anticopia y servicio técnico oficial."
+                          value={newSlide.subtitle}
+                          onChange={(e) => setNewSlide({ ...newSlide, subtitle: e.target.value })}
+                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block text-xs font-medium text-zinc-300">Foto de Fondo (Pantalla Completa) *</label>
+                        <div className="flex flex-col sm:flex-row gap-3 items-center">
+                          <label className="cursor-pointer bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 border border-zinc-700 shrink-0">
+                            <Upload className="w-4 h-4 text-red-500" />
+                            <span>Subir imagen</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                  handleImageUpload(e.target.files[0], (url) => {
+                                    setNewSlide({ ...newSlide, imageUrl: url });
+                                  });
+                                }
+                              }}
+                            />
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="o URL directa de la foto..."
+                            value={newSlide.imageUrl}
+                            onChange={(e) => setNewSlide({ ...newSlide, imageUrl: e.target.value })}
+                            className="flex-1 px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white"
+                          />
+                        </div>
+                        {newSlide.imageUrl && (
+                          <img
+                            src={newSlide.imageUrl}
+                            alt="Preview slide"
+                            className="h-24 w-full object-cover rounded-lg border border-zinc-800 mt-2"
+                          />
+                        )}
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                      >
+                        Guardar Diapositiva
+                      </button>
+                    </form>
+                  )}
 
                   {/* Carousel list */}
                   <div className="space-y-3">
@@ -1043,7 +1654,19 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                             <div className="font-bold text-white truncate">{slide.title}</div>
                             <div className="text-zinc-400 text-[11px] truncate">{slide.subtitle}</div>
                           </div>
-                          <div className="flex items-center shrink-0">
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingSlide({ ...slide });
+                                const panel = document.getElementById('admin-modal-scroll-area');
+                                if (panel) panel.scrollTo({ top: 0, behavior: 'smooth' });
+                              }}
+                              className="p-2 text-zinc-400 hover:text-amber-400 hover:bg-amber-950/40 rounded-lg transition-colors cursor-pointer"
+                              title="Modificar diapositiva (datos o foto)"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
                             {slideToDeleteId === slide.id ? (
                               <div className="flex items-center gap-1.5 bg-red-950/90 border border-red-600/80 p-1.5 rounded-lg animate-in fade-in">
                                 <span className="text-[10px] text-red-200 font-bold whitespace-nowrap">¿Borrar?</span>
